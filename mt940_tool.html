@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MT940 Amendment Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 820px; margin: 0 auto; }
+
+    header { margin-bottom: 2rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; }
+    header p { color: #555; margin-top: 0.4rem; font-size: 0.95rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid #e8ecf0;
+    }
+
+    .field { margin-bottom: 1.1rem; }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+
+    label .hint { font-weight: 400; color: #777; font-size: 0.8rem; }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #d0d7de;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fafbfc;
+      color: #1a1a2e;
+    }
+
+    input[type="file"] { padding: 0.4rem 0.6rem; cursor: pointer; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 560px) { .row { grid-template-columns: 1fr; } }
+
+    details { border: 1.5px solid #d0d7de; border-radius: 6px; padding: 0.75rem 1rem; }
+    summary { cursor: pointer; font-weight: 600; font-size: 0.875rem; color: #1d6fa4; user-select: none; }
+    details[open] summary { margin-bottom: 0.75rem; }
+
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; align-items: center; }
+
+    button {
+      padding: 0.65rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-primary { background: #1d6fa4; color: #fff; }
+    .btn-primary:hover { background: #165d8c; }
+    .btn-primary:disabled { background: #a0b8cc; cursor: not-allowed; }
+
+    .btn-secondary { background: #e8ecf0; color: #333; }
+    .btn-secondary:hover { background: #d5dce3; }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .alert-error { background: #fdecea; border: 1px solid #f5c6c2; color: #8b1a1a; }
+    .alert-success { background: #e8f5e9; border: 1px solid #b8ddb9; color: #1b5e20; }
+    .alert-info { background: #e3f2fd; border: 1px solid #b3d9f7; color: #0d47a1; }
+
+    #preview-result { display: none; margin-top: 1.5rem; }
+
+    .stat-row { display: flex; gap: 2rem; margin-bottom: 1.25rem; }
+    .stat { text-align: center; }
+    .stat .value { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .stat .label { font-size: 0.78rem; color: #666; margin-top: 0.2rem; }
+    .stat.total .value { color: #1d6fa4; }
+    .stat.matched .value { color: #2d7a3e; }
+    .stat.unmatched .value { color: #c0392b; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th {
+      background: #f4f6f9;
+      text-align: left;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #444;
+      border-bottom: 2px solid #d0d7de;
+    }
+    td { padding: 0.45rem 0.6rem; border-bottom: 1px solid #eaecef; }
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-matched { background: #d4edda; color: #155724; }
+    .badge-unmatched { background: #f8d7da; color: #721c24; }
+
+    #spinner {
+      display: none;
+      width: 20px; height: 20px;
+      border: 3px solid #ccc;
+      border-top-color: #1d6fa4;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .file-chosen { font-size: 0.82rem; color: #2d7a3e; margin-top: 0.3rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>MT940 Amendment Tool</h1>
+    <p>Load an MT940 bank statement and a CSV export — matching transactions get <code>:87: Debtors Name</code> appended. No server required, runs entirely in your browser.</p>
+  </header>
+
+  <div id="alert-area"></div>
+
+  <!-- MT940 File -->
+  <div class="card">
+    <h2>MT940 Source File</h2>
+    <div class="field">
+      <label for="mt940_file">Select MT940 file <span class="hint">(.sta / .mt940 / .txt — browse to your network drive)</span></label>
+      <input type="file" id="mt940_file" accept=".sta,.mt940,.txt,.STA,.MT940" />
+      <div id="mt940-chosen" class="file-chosen" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- CSV File -->
+  <div class="card">
+    <h2>CSV Bank Statement</h2>
+    <div class="field">
+      <label for="csv_file">Upload CSV file <span class="hint">(.csv exported from your bank portal)</span></label>
+      <input type="file" id="csv_file" accept=".csv,.CSV" />
+      <div id="csv-chosen" class="file-chosen" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Column Mapping -->
+  <div class="card">
+    <h2>Column Mapping <span style="font-weight:400;font-size:0.85rem;color:#777;">(optional)</span></h2>
+    <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">
+      Leave blank to use defaults. Enter comma-separated names if your CSV uses different column headers.
+    </p>
+    <details>
+      <summary>Customise CSV column names</summary>
+      <div class="row" style="margin-top:0.5rem;">
+        <div class="field">
+          <label>Date column(s) <span class="hint">default: Value Date, Date, Transaction Date</span></label>
+          <input type="text" id="date_cols" placeholder="e.g. Value Date, Txn Date" />
+        </div>
+        <div class="field">
+          <label>Amount column(s) <span class="hint">default: Amount, Debit, Credit</span></label>
+          <input type="text" id="amount_cols" placeholder="e.g. Amount, Debit Amount" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Debtor Name column(s) <span class="hint">default: Debtor Name, Payee, Description, Counterparty</span></label>
+        <input type="text" id="debtor_cols" placeholder="e.g. Debtor Name, Payee" />
+      </div>
+    </details>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="download-btn" disabled>&#8681; Generate &amp; Download Amended MT940</button>
+    <button class="btn-secondary" id="preview-btn" disabled>Preview Matches</button>
+    <div id="spinner"></div>
+  </div>
+
+  <!-- Preview Panel -->
+  <div id="preview-result" class="card">
+    <h2>Match Preview</h2>
+    <div id="preview-stats" class="stat-row"></div>
+    <div style="overflow-x:auto;">
+      <table id="preview-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>D/C</th><th>Amount</th><th>Reference</th>
+            <th>:87: Debtor Name</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── Defaults ───────────────────────────────────────────────────────────────
+const DEFAULT_DATE_COLS   = ["value date","date","transaction date","txn date"];
+const DEFAULT_AMOUNT_COLS = ["amount","debit","credit","txn amount"];
+const DEFAULT_DEBTOR_COLS = ["debtor name","payee","description","counterparty","narrative"];
+
+// ─── MT940 Parser ────────────────────────────────────────────────────────────
+function parseMT940(text) {
+  const lines = text.split(/\r?\n/);
+  const segments = [];
+  let curTag = null, curLines = [];
+
+  for (const line of lines) {
+    const m = line.match(/^:(\d{2}[A-Z]?):(.*)/);
+    if (m) {
+      if (curTag !== null) segments.push([curTag, curLines]);
+      curTag = m[1];
+      curLines = m[2] !== "" ? [m[2]] : [];
+    } else {
+      if (curTag === null) {
+        segments.push(["__pre__", [line]]);
+      } else {
+        curLines.push(line);
+      }
+    }
+  }
+  if (curTag !== null) segments.push([curTag, curLines]);
+
+  const header = [], footer = [], transactions = [];
+  let inTx = false;
+  let curTx = null;
+
+  for (const [tag, content] of segments) {
+    if (tag === "__pre__") { header.push(...content); continue; }
+
+    if (tag === "61") {
+      inTx = true;
+      if (curTx) transactions.push(curTx);
+      curTx = parse61(content.join("\n"));
+      curTx.raw86 = [];
+      curTx.debtorName = null;
+      continue;
+    }
+
+    if (tag === "86" && inTx && curTx) {
+      curTx.raw86 = content;
+      continue;
+    }
+
+    // footer territory
+    if (curTx) { transactions.push(curTx); curTx = null; }
+    if (!inTx) {
+      header.push(`:${tag}:` + content.join("\n"));
+    } else {
+      footer.push(`:${tag}:` + content.join("\n"));
+    }
+  }
+  if (curTx) transactions.push(curTx);
+
+  return { header, transactions, footer };
+}
+
+function parse61(raw) {
+  const m = raw.match(
+    /^(\d{6})(\d{4})?(R?[CD])([\d,]+)([A-Z]{4})([^/\n]*)(?:\/\/([^\n]*))?/
+  );
+  if (!m) return { raw61: raw, valueDate:"", entryDate:"", dc:"", amount:"", txType:"", custRef:"", bankRef:"" };
+  return {
+    raw61: raw,
+    valueDate: m[1],
+    entryDate: m[2] || "",
+    dc: m[3],
+    amount: m[4],
+    txType: m[5],
+    custRef: (m[6]||"").trim(),
+    bankRef: (m[7]||"").trim(),
+  };
+}
+
+function matchKey(tx) {
+  return `${tx.valueDate}|${tx.amount}`;
+}
+
+function renderMT940(msg) {
+  const parts = [...msg.header];
+  for (const tx of msg.transactions) {
+    parts.push(`:61:${tx.raw61}`);
+    if (tx.raw86.length) parts.push(`:86:${tx.raw86.join("\n")}`);
+    if (tx.debtorName)   parts.push(`:87:${tx.debtorName}`);
+  }
+  parts.push(...msg.footer);
+  return parts.join("\n");
+}
+
+// ─── CSV Parser ───────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  // Strip BOM
+  text = text.replace(/^﻿/, "");
+  const lines = text.split(/\r?\n/);
+  const rows = [];
+  for (const line of lines) {
+    // Simple CSV split (handles quoted fields)
+    const cols = [];
+    let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; }
+      else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ""; }
+      else { cur += c; }
+    }
+    cols.push(cur.trim());
+    rows.push(cols);
+  }
+  return rows;
+}
+
+function findColIdx(headers, candidates) {
+  const lower = headers.map(h => h.toLowerCase().trim());
+  for (const c of candidates) {
+    const idx = lower.indexOf(c.toLowerCase().trim());
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+function parseDate(val) {
+  val = (val || "").trim();
+  const fmts = [
+    { re: /^(\d{2})\/(\d{2})\/(\d{4})$/, y:3, m:2, d:1 },  // DD/MM/YYYY
+    { re: /^(\d{4})-(\d{2})-(\d{2})$/, y:1, m:2, d:3 },    // YYYY-MM-DD
+    { re: /^(\d{2})-(\d{2})-(\d{4})$/, y:3, m:2, d:1 },    // DD-MM-YYYY
+    { re: /^(\d{2})\.(\d{2})\.(\d{4})$/, y:3, m:2, d:1 },  // DD.MM.YYYY
+    { re: /^(\d{2})\/(\d{2})\/(\d{2})$/, y:3, m:2, d:1, shortYear:true }, // DD/MM/YY
+  ];
+  for (const f of fmts) {
+    const m = val.match(f.re);
+    if (m) {
+      let y = m[f.y], mo = m[f.m], d = m[f.d];
+      if (f.shortYear) y = (parseInt(y) < 50 ? "20" : "19") + y;
+      return y.slice(2) + mo.padStart(2,"0") + d.padStart(2,"0"); // YYMMDD
+    }
+  }
+  return null;
+}
+
+function normaliseAmount(val) {
+  val = (val || "").trim().replace(/\s/g,"").replace(/−/g,"-").replace(/^-/,"");
+  // European format: 1.234,56
+  if (/^\d{1,3}(\.\d{3})*,\d{2}$/.test(val)) {
+    val = val.replace(/\./g,"").replace(",",".");
+  } else {
+    val = val.replace(",",".");
+  }
+  const f = parseFloat(val);
+  if (isNaN(f)) return val;
+  return f.toFixed(2).replace(".",",");
+}
+
+function buildLookup(csvText, dateCols, amountCols, debtorCols) {
+  const rows = parseCSV(csvText);
+  if (rows.length < 2) throw new Error("CSV appears empty or has no data rows.");
+
+  const headers = rows[0];
+  const dateIdx   = findColIdx(headers, dateCols);
+  const amountIdx = findColIdx(headers, amountCols);
+  const debtorIdx = findColIdx(headers, debtorCols);
+
+  const missing = [];
+  if (dateIdx   === -1) missing.push(`date (tried: ${dateCols.join(", ")})`);
+  if (amountIdx === -1) missing.push(`amount (tried: ${amountCols.join(", ")})`);
+  if (debtorIdx === -1) missing.push(`debtor name (tried: ${debtorCols.join(", ")})`);
+
+  if (missing.length) {
+    throw new Error(
+      `Could not identify required CSV columns. Missing: ${missing.join("; ")}.\n` +
+      `Available columns: ${headers.join(", ")}`
+    );
+  }
+
+  const lookup = {};
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (row.length < 2 || row.every(c => !c)) continue;
+    const rawDate   = row[dateIdx]   || "";
+    const rawAmount = row[amountIdx] || "";
+    const debtor    = row[debtorIdx] || "";
+    const yymmdd = parseDate(rawDate);
+    if (!yymmdd) continue;
+    const norm = normaliseAmount(rawAmount);
+    const key = `${yymmdd}|${norm}`;
+    if (debtor) lookup[key] = debtor;
+  }
+  return lookup;
+}
+
+function matchTransactions(msg, lookup) {
+  let matched = 0;
+  for (const tx of msg.transactions) {
+    const debtor = lookup[matchKey(tx)];
+    if (debtor) { tx.debtorName = debtor; matched++; }
+  }
+  return { matched, unmatched: msg.transactions.length - matched, total: msg.transactions.length };
+}
+
+// ─── Column config from UI ───────────────────────────────────────────────────
+function getColConfig() {
+  const split = v => v.split(",").map(s => s.trim()).filter(Boolean);
+  const dc = split(document.getElementById("date_cols").value);
+  const ac = split(document.getElementById("amount_cols").value);
+  const ec = split(document.getElementById("debtor_cols").value);
+  return {
+    dateCols:   dc.length ? dc : DEFAULT_DATE_COLS,
+    amountCols: ac.length ? ac : DEFAULT_AMOUNT_COLS,
+    debtorCols: ec.length ? ec : DEFAULT_DEBTOR_COLS,
+  };
+}
+
+// ─── File reading helpers ────────────────────────────────────────────────────
+let mt940Text = null, csvText = null;
+
+function readFile(file, encoding) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = e => resolve(e.target.result);
+    r.onerror = () => reject(new Error("Could not read file: " + file.name));
+    r.readAsText(file, encoding || "UTF-8");
+  });
+}
+
+// ─── UI helpers ──────────────────────────────────────────────────────────────
+function showAlert(msg, type) {
+  const area = document.getElementById("alert-area");
+  area.innerHTML = `<div class="alert alert-${type}">${msg.replace(/\n/g,"<br>")}</div>`;
+  area.scrollIntoView({ behavior: "smooth" });
+}
+function clearAlert() { document.getElementById("alert-area").innerHTML = ""; }
+
+function setLoading(on) {
+  document.getElementById("spinner").style.display = on ? "block" : "none";
+  document.getElementById("preview-btn").disabled  = on || !ready();
+  document.getElementById("download-btn").disabled = on || !ready();
+}
+
+function ready() { return mt940Text !== null && csvText !== null; }
+function updateButtons() {
+  document.getElementById("preview-btn").disabled  = !ready();
+  document.getElementById("download-btn").disabled = !ready();
+}
+
+// ─── File input listeners ────────────────────────────────────────────────────
+document.getElementById("mt940_file").addEventListener("change", async function() {
+  const file = this.files[0];
+  if (!file) return;
+  try {
+    mt940Text = await readFile(file, "UTF-8");
+    document.getElementById("mt940-chosen").textContent = "✓ " + file.name;
+    document.getElementById("mt940-chosen").style.display = "block";
+    clearAlert();
+    updateButtons();
+  } catch(e) { showAlert(e.message, "error"); }
+});
+
+document.getElementById("csv_file").addEventListener("change", async function() {
+  const file = this.files[0];
+  if (!file) return;
+  try {
+    // Read as UTF-8 (handles BOM via JS strip)
+    csvText = await readFile(file, "UTF-8");
+    document.getElementById("csv-chosen").textContent = "✓ " + file.name;
+    document.getElementById("csv-chosen").style.display = "block";
+    clearAlert();
+    updateButtons();
+  } catch(e) { showAlert(e.message, "error"); }
+});
+
+// ─── Preview ─────────────────────────────────────────────────────────────────
+document.getElementById("preview-btn").addEventListener("click", function() {
+  clearAlert();
+  setLoading(true);
+  try {
+    const cfg = getColConfig();
+    const lookup = buildLookup(csvText, cfg.dateCols, cfg.amountCols, cfg.debtorCols);
+    const msg  = parseMT940(mt940Text);
+    const stats = matchTransactions(msg, lookup);
+
+    // Stats
+    document.getElementById("preview-stats").innerHTML = `
+      <div class="stat total"><div class="value">${stats.total}</div><div class="label">Total Transactions</div></div>
+      <div class="stat matched"><div class="value">${stats.matched}</div><div class="label">Matched</div></div>
+      <div class="stat unmatched"><div class="value">${stats.unmatched}</div><div class="label">Unmatched</div></div>
+    `;
+
+    // Table
+    const tbody = document.getElementById("preview-body");
+    tbody.innerHTML = msg.transactions.map(tx => `
+      <tr>
+        <td>${tx.valueDate}</td>
+        <td>${tx.dc}</td>
+        <td style="text-align:right">${tx.amount}</td>
+        <td>${tx.custRef || tx.bankRef || ""}</td>
+        <td>${tx.debtorName ? tx.debtorName : '<em style="color:#aaa">—</em>'}</td>
+        <td><span class="badge ${tx.debtorName ? "badge-matched" : "badge-unmatched"}">${tx.debtorName ? "Matched" : "No match"}</span></td>
+      </tr>
+    `).join("");
+
+    document.getElementById("preview-result").style.display = "block";
+    document.getElementById("preview-result").scrollIntoView({ behavior: "smooth" });
+
+  } catch(e) {
+    showAlert(e.message, "error");
+  } finally {
+    setLoading(false);
+  }
+});
+
+// ─── Download ────────────────────────────────────────────────────────────────
+document.getElementById("download-btn").addEventListener("click", function() {
+  clearAlert();
+  setLoading(true);
+  try {
+    const cfg = getColConfig();
+    const lookup = buildLookup(csvText, cfg.dateCols, cfg.amountCols, cfg.debtorCols);
+    const msg  = parseMT940(mt940Text);
+    const stats = matchTransactions(msg, lookup);
+    const amended = renderMT940(msg);
+
+    // Trigger download
+    const blob = new Blob([amended], { type: "text/plain" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    const mt940Name = document.getElementById("mt940_file").files[0]?.name || "statement";
+    const stem = mt940Name.replace(/\.[^.]+$/, "");
+    const ts   = new Date().toISOString().slice(0,19).replace(/[-:T]/g, match => match === "T" ? "_" : match);
+    a.href = url;
+    a.download = `${stem}_amended_${ts}.sta`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    showAlert(
+      `Done — ${stats.matched} of ${stats.total} transactions matched. ` +
+      `${stats.unmatched > 0 ? stats.unmatched + " transaction(s) had no CSV match and were left unchanged." : "All transactions matched."}`,
+      stats.unmatched > 0 ? "info" : "success"
+    );
+
+  } catch(e) {
+    showAlert(e.message, "error");
+  } finally {
+    setLoading(false);
+  }
+});
+</script>
+</body>
+</html>
