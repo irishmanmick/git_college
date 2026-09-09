@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MT940 Amendment Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      color: #1a1a2e;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+
+    header p {
+      color: #555;
+      margin-top: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid #e8ecf0;
+      color: #1a1a2e;
+    }
+
+    .field {
+      margin-bottom: 1.2rem;
+    }
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      color: #333;
+    }
+
+    label .hint {
+      font-weight: 400;
+      color: #777;
+      font-size: 0.8rem;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1.5px solid #d0d7de;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #fafbfc;
+      transition: border-color 0.15s;
+      color: #1a1a2e;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #1d6fa4;
+      background: #fff;
+    }
+
+    input[type="file"] {
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 560px) {
+      .row { grid-template-columns: 1fr; }
+    }
+
+    details {
+      border: 1.5px solid #d0d7de;
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: #1d6fa4;
+      user-select: none;
+    }
+
+    details[open] summary {
+      margin-bottom: 0.75rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    button {
+      padding: 0.65rem 1.4rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    button:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: #1d6fa4;
+      color: #fff;
+    }
+
+    .btn-primary:hover { background: #165d8c; }
+
+    .btn-secondary {
+      background: #e8ecf0;
+      color: #333;
+    }
+
+    .btn-secondary:hover { background: #d5dce3; }
+
+    .alerts {
+      margin-bottom: 1.5rem;
+    }
+
+    .alert {
+      padding: 0.8rem 1rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .alert-error {
+      background: #fdecea;
+      border: 1px solid #f5c6c2;
+      color: #8b1a1a;
+    }
+
+    .alert-success {
+      background: #e8f5e9;
+      border: 1px solid #b8ddb9;
+      color: #1b5e20;
+    }
+
+    .file-list {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .file-list span {
+      display: inline-block;
+      background: #e8ecf0;
+      border-radius: 4px;
+      padding: 0.2rem 0.5rem;
+      margin: 0.2rem 0.2rem 0.2rem 0;
+    }
+
+    #preview-result {
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+
+    th {
+      background: #f4f6f9;
+      text-align: left;
+      padding: 0.5rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #444;
+      border-bottom: 2px solid #d0d7de;
+    }
+
+    td {
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid #eaecef;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-matched { background: #d4edda; color: #155724; }
+    .badge-unmatched { background: #f8d7da; color: #721c24; }
+
+    .stat-row {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat .label {
+      font-size: 0.78rem;
+      color: #666;
+      margin-top: 0.2rem;
+    }
+
+    .stat.matched .value { color: #2d7a3e; }
+    .stat.unmatched .value { color: #c0392b; }
+    .stat.total .value { color: #1d6fa4; }
+
+    #loading {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 3px solid #ccc;
+      border-top-color: #1d6fa4;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>MT940 Amendment Tool</h1>
+    <p>Match CSV bank export transactions to an MT940 file and append <code>:87: Debtors Name</code> to each matched transaction.</p>
+  </header>
+
+  {% if messages %}
+  <div class="alerts">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'error' if category == 'error' else 'success' }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form id="main-form" action="/process" method="post" enctype="multipart/form-data">
+
+    <!-- MT940 Source -->
+    <div class="card">
+      <h2>MT940 Source File</h2>
+
+      <div class="field">
+        <label for="mt940_dir">Network directory path <span class="hint">(where MT940 files are stored)</span></label>
+        <input type="text" id="mt940_dir" name="mt940_dir" value="{{ mt940_dir }}"
+               placeholder="{{ default_mt940_dir }}" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="mt940_file">MT940 filename</label>
+        {% if mt940_files %}
+        <select id="mt940_file" name="mt940_file">
+          <option value="">-- select a file --</option>
+          {% for f in mt940_files %}
+          <option value="{{ f }}">{{ f }}</option>
+          {% endfor %}
+        </select>
+        <div class="file-list">
+          Files found:
+          {% for f in mt940_files %}<span>{{ f }}</span>{% endfor %}
+        </div>
+        {% else %}
+        <input type="text" id="mt940_file" name="mt940_file"
+               placeholder="e.g. statement_20240115.sta" autocomplete="off" />
+        <div class="file-list" style="color:#c0392b;">
+          No files detected in <em>{{ mt940_dir }}</em> — enter the filename manually, or update the directory path above and reload.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- CSV Upload -->
+    <div class="card">
+      <h2>CSV Bank Statement</h2>
+      <div class="field">
+        <label for="csv_file">Upload CSV file <span class="hint">(.csv exported from your bank portal)</span></label>
+        <input type="file" id="csv_file" name="csv_file" accept=".csv" required />
+      </div>
+    </div>
+
+    <!-- Advanced column mapping -->
+    <div class="card">
+      <h2>Column Mapping <span style="font-weight:400;font-size:0.85rem;color:#777;">(optional)</span></h2>
+      <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">
+        Leave blank to use defaults. Provide comma-separated column names if your CSV uses non-standard headers.
+      </p>
+      <details>
+        <summary>Customise CSV column names</summary>
+        <div class="row" style="margin-top:0.5rem;">
+          <div class="field">
+            <label>Date column(s) <span class="hint">default: Value Date, Date, Transaction Date</span></label>
+            <input type="text" name="date_columns" placeholder="e.g. Value Date, Txn Date" />
+          </div>
+          <div class="field">
+            <label>Amount column(s) <span class="hint">default: Amount, Debit, Credit</span></label>
+            <input type="text" name="amount_columns" placeholder="e.g. Amount, Debit Amount" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Debtor Name column(s) <span class="hint">default: Debtor Name, Payee, Description, Counterparty</span></label>
+          <input type="text" name="debtor_columns" placeholder="e.g. Debtor Name, Payee" />
+        </div>
+      </details>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary" id="download-btn">
+        &#8681; Generate &amp; Download Amended MT940
+      </button>
+      <button type="button" class="btn-secondary" id="preview-btn">
+        Preview Matches
+      </button>
+      <div id="loading"><div class="spinner"></div> Processing&hellip;</div>
+    </div>
+
+  </form>
+
+  <!-- Preview result panel -->
+  <div id="preview-result" class="card" style="margin-top:1.5rem;">
+    <h2>Match Preview</h2>
+    <div id="preview-stats" class="stat-row"></div>
+    <div id="preview-table-wrapper" style="overflow-x:auto;"></div>
+  </div>
+
+</div>
+
+<script>
+  const form = document.getElementById('main-form');
+  const previewBtn = document.getElementById('preview-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const loading = document.getElementById('loading');
+  const previewResult = document.getElementById('preview-result');
+  const previewStats = document.getElementById('preview-stats');
+  const previewTableWrapper = document.getElementById('preview-table-wrapper');
+
+  // Reload page when directory changes (to refresh file list)
+  document.getElementById('mt940_dir').addEventListener('change', function() {
+    const dir = encodeURIComponent(this.value);
+    window.location.href = '/?mt940_dir=' + dir;
+  });
+
+  previewBtn.addEventListener('click', async () => {
+    const fd = new FormData(form);
+    loading.style.display = 'flex';
+    previewResult.style.display = 'none';
+
+    try {
+      const resp = await fetch('/preview', { method: 'POST', body: fd });
+      const data = await resp.json();
+
+      if (data.error) {
+        alert('Error: ' + data.error);
+        return;
+      }
+
+      // Stats
+      previewStats.innerHTML = `
+        <div class="stat total"><div class="value">${data.stats.total}</div><div class="label">Total Transactions</div></div>
+        <div class="stat matched"><div class="value">${data.stats.matched}</div><div class="label">Matched</div></div>
+        <div class="stat unmatched"><div class="value">${data.stats.unmatched}</div><div class="label">Unmatched</div></div>
+      `;
+
+      // Table
+      const rows = data.transactions.map(tx => `
+        <tr>
+          <td>${tx.date}</td>
+          <td>${tx.dc}</td>
+          <td style="text-align:right;">${tx.amount}</td>
+          <td>${tx.ref}</td>
+          <td>${tx.debtor_name || '<em style="color:#aaa">—</em>'}</td>
+          <td><span class="badge ${tx.matched ? 'badge-matched' : 'badge-unmatched'}">${tx.matched ? 'Matched' : 'No match'}</span></td>
+        </tr>
+      `).join('');
+
+      previewTableWrapper.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th><th>D/C</th><th>Amount</th><th>Reference</th>
+              <th>:87: Debtor Name</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      previewResult.style.display = 'block';
+      previewResult.scrollIntoView({ behavior: 'smooth' });
+
+    } catch(e) {
+      alert('Unexpected error: ' + e.message);
+    } finally {
+      loading.style.display = 'none';
+    }
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    loading.style.display = 'flex';
+    // Form submits normally; re-hide loading after navigation
+    setTimeout(() => { loading.style.display = 'none'; }, 4000);
+  });
+
+  // Show flash messages above fold if any
+  const alerts = document.querySelectorAll('.alert');
+  if (alerts.length) alerts[0].scrollIntoView({ behavior: 'smooth' });
+</script>
+</body>
+</html>
