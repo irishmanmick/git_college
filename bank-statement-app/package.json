@@ -1,0 +1,21 @@
+{
+  "name": "kepak-bank-statement-app",
+  "version": "1.0.0",
+  "description": "Generates D365 bank statement import files from a bank transactions CSV",
+  "private": true,
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "build:standalone": "node tools/build-standalone.js"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

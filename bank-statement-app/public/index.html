@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bank Statement Generator — D365 Import</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <h1>Bank Statement Generator</h1>
+      <p>Build a D365 bank statement import file from a bank transactions CSV.</p>
+    </header>
+
+    <main>
+      <ol class="steps" id="step-indicator">
+        <li data-step="1" class="current">Account</li>
+        <li data-step="2">Transactions</li>
+        <li data-step="3">Balances</li>
+        <li data-step="4">Generate</li>
+      </ol>
+
+      <!-- Step 1: account selection -->
+      <section class="panel" id="panel-1">
+        <h2><span class="step-number">1</span> Which account are you reconciling?</h2>
+        <div class="field">
+          <label for="entity-filter">Entity</label>
+          <select id="entity-filter">
+            <option value="">All entities</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="account-select">Bank account</label>
+          <select id="account-select" size="12" aria-describedby="account-help"></select>
+          <p class="help" id="account-help">
+            Accounts come from the "List of Bank Accounts" tab of the mapping workbook. Accounts
+            marked for exclusion or deletion are not listed.
+          </p>
+        </div>
+        <div class="account-card hidden" id="account-card"></div>
+        <div class="actions">
+          <button type="button" id="account-next" class="primary" disabled>
+            Continue to transactions
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 2: CSV upload -->
+      <section class="panel hidden" id="panel-2">
+        <h2><span class="step-number">2</span> Upload the transactions CSV</h2>
+        <p class="help">
+          The bank export for this account. Required columns: <code>Amount</code>,
+          <code>Credit / Debit</code> and <code>Date</code>. Also used where present:
+          <code>Account / IBAN</code>, <code>Currency</code>, <code>Transaction Narrative</code>,
+          <code>Transaction Reference</code>, <code>Debtor Name</code>, <code>Creditor Name</code>,
+          <code>Pending (P) / Historical (H)</code>.
+        </p>
+        <div class="field">
+          <label for="csv-input">CSV file</label>
+          <input type="file" id="csv-input" accept=".csv,text/csv,text/plain" />
+        </div>
+        <div id="csv-summary"></div>
+        <div class="actions">
+          <button type="button" id="back-to-1" class="ghost">Back</button>
+          <button type="button" id="csv-next" class="primary" disabled>Continue to balances</button>
+        </div>
+      </section>
+
+      <!-- Step 3: balances -->
+      <section class="panel hidden" id="panel-3">
+        <h2><span class="step-number">3</span> Enter the opening and closing balances</h2>
+        <p class="help">
+          Taken from the bank statement for this period. The opening balance plus the total of the
+          uploaded transactions must equal the closing balance.
+        </p>
+        <form id="balance-form" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="opening-balance">Opening balance</label>
+              <input
+                type="text"
+                id="opening-balance"
+                inputmode="decimal"
+                autocomplete="off"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="field">
+              <label for="closing-balance">Closing balance</label>
+              <input
+                type="text"
+                id="closing-balance"
+                inputmode="decimal"
+                autocomplete="off"
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+          <div class="actions">
+            <button type="button" id="back-to-2" class="ghost">Back</button>
+            <button type="submit" class="primary">Verify balances</button>
+          </div>
+        </form>
+        <div id="balance-result"></div>
+      </section>
+
+      <!-- Step 4: generate -->
+      <section class="panel hidden" id="panel-4">
+        <h2><span class="step-number">4</span> Generate the import file</h2>
+        <div id="generate-summary"></div>
+        <div class="actions">
+          <button type="button" id="back-to-3" class="ghost">Back</button>
+          <button type="button" id="generate-button" class="primary">
+            Generate and download Excel file
+          </button>
+          <button type="button" id="restart-button" class="ghost">Start again</button>
+        </div>
+        <div id="generate-result"></div>
+      </section>
+    </main>
+
+    <script src="api-http.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

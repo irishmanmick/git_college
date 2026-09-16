@@ -1,0 +1,2827 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bank Statement Generator — D365 Import</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0iI2E2MTkyZSIgLz4KICA8ZyBmaWxsPSIjZmZmIj4KICAgIDxyZWN0IHg9IjciIHk9IjgiIHdpZHRoPSIxOCIgaGVpZ2h0PSIyLjUiIHJ4PSIxLjI1IiAvPgogICAgPHJlY3QgeD0iNyIgeT0iMTQiIHdpZHRoPSIxOCIgaGVpZ2h0PSIyLjUiIHJ4PSIxLjI1IiAvPgogICAgPHJlY3QgeD0iNyIgeT0iMjAiIHdpZHRoPSIxMSIgaGVpZ2h0PSIyLjUiIHJ4PSIxLjI1IiAvPgogIDwvZz4KPC9zdmc+" type="image/svg+xml" />
+    <!--
+      GENERATED FILE — do not edit by hand.
+      Built by tools/build-standalone.js from the sources listed in its header.
+      Rebuild with: npm run build:standalone
+
+      Everything runs in your browser. No server, no install, no network: the
+      CSV you choose is never uploaded anywhere, and the Excel file is written
+      locally by your browser.
+    -->
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --panel: #ffffff;
+        --ink: #1b2430;
+        --muted: #5b6672;
+        --line: #d9dee4;
+        --brand: #a6192e;
+        --brand-dark: #7d1322;
+        --ok-bg: #e7f4ec;
+        --ok-ink: #1c6b3c;
+        --ok-line: #9ed0b3;
+        --bad-bg: #fdecec;
+        --bad-ink: #9a2222;
+        --bad-line: #efb0b0;
+        --warn-bg: #fdf5e3;
+        --warn-ink: #7a5a12;
+        --warn-line: #e5d193;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.5 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+      }
+
+      .masthead {
+        background: var(--brand);
+        color: #fff;
+        padding: 1.5rem 1.25rem;
+      }
+
+      .masthead h1 {
+        margin: 0;
+        font-size: 1.4rem;
+      }
+
+      .masthead p {
+        margin: 0.25rem 0 0;
+        opacity: 0.9;
+        font-size: 0.95rem;
+      }
+
+      main {
+        max-width: 940px;
+        margin: 0 auto;
+        padding: 1.5rem 1.25rem 4rem;
+      }
+
+      .steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.25rem;
+        counter-reset: step;
+      }
+
+      .steps li {
+        flex: 1 1 140px;
+        padding: 0.5rem 0.75rem;
+        background: #e7eaee;
+        color: var(--muted);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+      }
+
+      .steps li.current {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .steps li.done {
+        background: var(--ok-bg);
+        color: var(--ok-ink);
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .panel h2 {
+        margin: 0 0 1rem;
+        font-size: 1.15rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      .step-number {
+        display: inline-grid;
+        place-items: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #fff;
+        font-size: 0.9rem;
+      }
+
+      .field {
+        margin-bottom: 1rem;
+      }
+
+      /* Breathing room between an introductory paragraph and the first input. */
+      .panel > p.help {
+        margin-bottom: 1.1rem;
+      }
+
+      .field-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .field-row .field {
+        flex: 1 1 220px;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.35rem;
+      }
+
+      select,
+      input[type="text"],
+      input[type="file"] {
+        width: 100%;
+        padding: 0.55rem 0.6rem;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        font: inherit;
+        background: #fff;
+        color: var(--ink);
+      }
+
+      select[size] {
+        padding: 0.25rem;
+      }
+
+      select:focus,
+      input:focus,
+      button:focus {
+        outline: 3px solid rgba(166, 25, 46, 0.35);
+        outline-offset: 1px;
+      }
+
+      input.invalid {
+        border-color: var(--bad-line);
+        background: #fff8f8;
+      }
+
+      .help {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin: 0.4rem 0 0;
+      }
+
+      code {
+        background: #eef1f4;
+        padding: 0.05rem 0.3rem;
+        border-radius: 3px;
+        font-size: 0.85em;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 1rem;
+      }
+
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 0.6rem 1.1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid transparent;
+      }
+
+      button.primary {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: var(--brand-dark);
+      }
+
+      button.ghost {
+        background: #fff;
+        border-color: var(--line);
+        color: var(--ink);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .notice {
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        margin-top: 1rem;
+        border: 1px solid;
+        font-size: 0.92rem;
+      }
+
+      .notice h3 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+      }
+
+      .notice ul {
+        margin: 0.4rem 0 0;
+        padding-left: 1.2rem;
+      }
+
+      .notice.ok {
+        background: var(--ok-bg);
+        color: var(--ok-ink);
+        border-color: var(--ok-line);
+      }
+
+      .notice.bad {
+        background: var(--bad-bg);
+        color: var(--bad-ink);
+        border-color: var(--bad-line);
+      }
+
+      .notice.warn {
+        background: var(--warn-bg);
+        color: var(--warn-ink);
+        border-color: var(--warn-line);
+      }
+
+      .notice.info {
+        background: #eef3f8;
+        color: #23425f;
+        border-color: #b9cee0;
+      }
+
+      .account-card,
+      .summary-grid {
+        background: #f8fafb;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 0.9rem 1rem;
+        margin-top: 0.5rem;
+      }
+
+      dl.kv {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.35rem 1rem;
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      dl.kv dt {
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      dl.kv dd {
+        margin: 0;
+      }
+
+      .num {
+        font-variant-numeric: tabular-nums;
+        font-family: "Consolas", "SF Mono", ui-monospace, monospace;
+      }
+
+      table.txns {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+      }
+
+      table.txns th,
+      table.txns td {
+        border-bottom: 1px solid var(--line);
+        padding: 0.4rem 0.5rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      table.txns th {
+        background: #eef1f4;
+        position: sticky;
+        top: 0;
+      }
+
+      table.txns td.right,
+      table.txns th.right {
+        text-align: right;
+      }
+
+      .table-scroll {
+        max-height: 320px;
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        margin-top: 0.75rem;
+      }
+
+      .statement-id {
+        font-family: "Consolas", "SF Mono", ui-monospace, monospace;
+        font-size: 1.05rem;
+        font-weight: 700;
+        word-break: break-all;
+      }
+
+      .debit {
+        color: var(--bad-ink);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="masthead">
+          <h1>Bank Statement Generator</h1>
+          <p>Build a D365 bank statement import file from a bank transactions CSV.</p>
+        </header>
+    
+        <main>
+          <ol class="steps" id="step-indicator">
+            <li data-step="1" class="current">Account</li>
+            <li data-step="2">Transactions</li>
+            <li data-step="3">Balances</li>
+            <li data-step="4">Generate</li>
+          </ol>
+    
+          <!-- Step 1: account selection -->
+          <section class="panel" id="panel-1">
+            <h2><span class="step-number">1</span> Which account are you reconciling?</h2>
+            <div class="field">
+              <label for="entity-filter">Entity</label>
+              <select id="entity-filter">
+                <option value="">All entities</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="account-select">Bank account</label>
+              <select id="account-select" size="12" aria-describedby="account-help"></select>
+              <p class="help" id="account-help">
+                Accounts come from the "List of Bank Accounts" tab of the mapping workbook. Accounts
+                marked for exclusion or deletion are not listed.
+              </p>
+            </div>
+            <div class="account-card hidden" id="account-card"></div>
+            <div class="actions">
+              <button type="button" id="account-next" class="primary" disabled>
+                Continue to transactions
+              </button>
+            </div>
+          </section>
+    
+          <!-- Step 2: CSV upload -->
+          <section class="panel hidden" id="panel-2">
+            <h2><span class="step-number">2</span> Upload the transactions CSV</h2>
+            <p class="help">
+              The bank export for this account. Required columns: <code>Amount</code>,
+              <code>Credit / Debit</code> and <code>Date</code>. Also used where present:
+              <code>Account / IBAN</code>, <code>Currency</code>, <code>Transaction Narrative</code>,
+              <code>Transaction Reference</code>, <code>Debtor Name</code>, <code>Creditor Name</code>,
+              <code>Pending (P) / Historical (H)</code>.
+            </p>
+            <div class="field">
+              <label for="csv-input">CSV file</label>
+              <input type="file" id="csv-input" accept=".csv,text/csv,text/plain" />
+            </div>
+            <div id="csv-summary"></div>
+            <div class="actions">
+              <button type="button" id="back-to-1" class="ghost">Back</button>
+              <button type="button" id="csv-next" class="primary" disabled>Continue to balances</button>
+            </div>
+          </section>
+    
+          <!-- Step 3: balances -->
+          <section class="panel hidden" id="panel-3">
+            <h2><span class="step-number">3</span> Enter the opening and closing balances</h2>
+            <p class="help">
+              Taken from the bank statement for this period. The opening balance plus the total of the
+              uploaded transactions must equal the closing balance.
+            </p>
+            <form id="balance-form" novalidate>
+              <div class="field-row">
+                <div class="field">
+                  <label for="opening-balance">Opening balance</label>
+                  <input
+                    type="text"
+                    id="opening-balance"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div class="field">
+                  <label for="closing-balance">Closing balance</label>
+                  <input
+                    type="text"
+                    id="closing-balance"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+              <div class="actions">
+                <button type="button" id="back-to-2" class="ghost">Back</button>
+                <button type="submit" class="primary">Verify balances</button>
+              </div>
+            </form>
+            <div id="balance-result"></div>
+          </section>
+    
+          <!-- Step 4: generate -->
+          <section class="panel hidden" id="panel-4">
+            <h2><span class="step-number">4</span> Generate the import file</h2>
+            <div id="generate-summary"></div>
+            <div class="actions">
+              <button type="button" id="back-to-3" class="ghost">Back</button>
+              <button type="button" id="generate-button" class="primary">
+                Generate and download Excel file
+              </button>
+              <button type="button" id="restart-button" class="ghost">Start again</button>
+            </div>
+            <div id="generate-result"></div>
+          </section>
+        </main>
+
+    <script>
+      var BankStatementCore = (function () {
+        'use strict';
+        var registry = {};
+        var cache = {};
+
+        function require(name) {
+          var key = String(name).replace(/^\.\//, '');
+          if (cache[key]) return cache[key].exports;
+          if (!registry[key]) throw new Error('Unknown module: ' + name);
+          var module = { exports: {} };
+          cache[key] = module;
+          registry[key](module, module.exports, require);
+          return module.exports;
+        }
+
+        registry["account-utils"] = function (module, exports, require) {
+          'use strict';
+
+          /**
+           * Account helpers with no filesystem or DOM dependency, so the same code runs
+           * on the server and inside the standalone browser tool.
+           */
+
+          /**
+           * Accounts a user is allowed to reconcile. Rows the mapping file names
+           * "MUST BE EXCLUDED" / "MUST BE DELETED" are flagged excluded and hidden.
+           */
+          function selectable(accounts) {
+            return accounts.filter((a) => !a.excluded);
+          }
+
+          function findById(accounts, id) {
+            return selectable(accounts).find((a) => a.id === id) || null;
+          }
+
+          /**
+           * Last 4 digits of the account, used in the statement ID. Prefers the bank
+           * account number and falls back to the IBAN.
+           */
+          function accountSuffix(account) {
+            const digits = (String(account.accountNumber || '').match(/\d/g) || []).join('');
+            if (digits.length >= 4) return digits.slice(-4);
+            const ibanDigits = (String(account.iban || '').match(/\d/g) || []).join('');
+            if (ibanDigits.length >= 4) return ibanDigits.slice(-4);
+            return null;
+          }
+
+          /**
+           * Bank code for the statement ID, derived from the first four characters of
+           * the SWIFT/BIC (the bank's institution code). AIBKIE2D -> AIB.
+           */
+          function bankCode(account) {
+            const swift = String(account.swift || '').toUpperCase();
+            if (/^AIBK/.test(swift)) return 'AIB';
+            if (swift.length >= 4) return swift.slice(0, 4);
+            return 'BANK';
+          }
+
+          /** The "CL · EUR-DEB · EUR — Debtors Account: Euro" picker label. */
+          function accountLabel(account) {
+            return `${account.entity} · ${account.bankAccount} · ${account.currency} — ${account.name}`;
+          }
+
+          /** The BANK-CCY-ACCT part of the statement ID, shown before a CSV is loaded. */
+          function statementIdPrefix(account) {
+            const suffix = accountSuffix(account) || account.bankAccount.replace(/[^A-Za-z0-9]/g, '');
+            return `${bankCode(account)}-${(account.currency || '').toUpperCase()}-${suffix}`;
+          }
+
+          module.exports = {
+            selectable,
+            findById,
+            accountSuffix,
+            bankCode,
+            accountLabel,
+            statementIdPrefix,
+          };
+
+        };
+
+        registry["csv"] = function (module, exports, require) {
+          'use strict';
+
+          /**
+           * Parsing of the bank transactions CSV export.
+           *
+           * Column names follow the CSV_Column_Reference tab of
+           * Kepak_BankStatement_Mapping.xlsx. Headers are matched loosely (case,
+           * spacing and punctuation are ignored) so minor export variations still work.
+           */
+
+          /** Minimal RFC 4180 parser: handles quoted fields, escaped quotes, CRLF. */
+          function parseDelimited(text, delimiter) {
+            const rows = [];
+            let row = [];
+            let field = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i += 1) {
+              const ch = text[i];
+
+              if (inQuotes) {
+                if (ch === '"') {
+                  if (text[i + 1] === '"') {
+                    field += '"';
+                    i += 1;
+                  } else {
+                    inQuotes = false;
+                  }
+                } else {
+                  field += ch;
+                }
+                continue;
+              }
+
+              if (ch === '"') {
+                inQuotes = true;
+              } else if (ch === delimiter) {
+                row.push(field);
+                field = '';
+              } else if (ch === '\n') {
+                row.push(field);
+                rows.push(row);
+                row = [];
+                field = '';
+              } else if (ch === '\r') {
+                // handled by the following \n, or ignored for lone CR line endings
+                if (text[i + 1] !== '\n') {
+                  row.push(field);
+                  rows.push(row);
+                  row = [];
+                  field = '';
+                }
+              } else {
+                field += ch;
+              }
+            }
+
+            if (field !== '' || row.length > 0) {
+              row.push(field);
+              rows.push(row);
+            }
+
+            return rows.filter((r) => r.some((c) => String(c).trim() !== ''));
+          }
+
+          /** Picks the delimiter used by the header line. */
+          function detectDelimiter(text) {
+            const firstLine = text.split(/\r?\n/, 1)[0] || '';
+            const candidates = [',', ';', '\t', '|'];
+            let best = ',';
+            let bestCount = -1;
+            for (const d of candidates) {
+              const count = firstLine.split(d).length - 1;
+              if (count > bestCount) {
+                best = d;
+                bestCount = count;
+              }
+            }
+            return best;
+          }
+
+          function normaliseKey(value) {
+            return String(value == null ? '' : value)
+              .toLowerCase()
+              .replace(/[^a-z0-9]/g, '');
+          }
+
+          /** Template field -> accepted CSV header spellings (normalised on compare). */
+          const COLUMN_ALIASES = {
+            ibanOrAccount: ['Account / IBAN', 'Account/IBAN', 'Account', 'IBAN', 'Account Number'],
+            pendingHistorical: [
+              'Pending (P) / Historical (H)',
+              'Pending / Historical',
+              'Pending(P)/Historical(H)',
+              'Status',
+            ],
+            amount: ['Amount', 'Transaction Amount', 'Value'],
+            currency: ['Currency', 'CCY', 'Transaction Currency'],
+            creditDebit: ['Credit / Debit', 'Credit/Debit', 'Debit / Credit', 'DR/CR', 'Credit or Debit'],
+            date: ['Date', 'Booking Date', 'Value Date', 'Transaction Date'],
+            narrative: ['Transaction Narrative', 'Narrative', 'Description', 'Details'],
+            balance: ['Balance', 'Running Balance'],
+            balanceCreditDebit: ['Balance Credit / Debit', 'Balance Credit/Debit', 'Balance DR/CR'],
+            reference: ['Transaction Reference', 'Reference', 'Bank Reference', 'End To End Id'],
+            creditorName: ['Creditor Name', 'Creditor', 'Payee', 'Payee Name'],
+            debtorName: ['Debtor Name', 'Debtor', 'Payer', 'Payer Name'],
+          };
+
+          const REQUIRED_COLUMNS = ['amount', 'creditDebit', 'date'];
+
+          const REQUIRED_COLUMN_LABELS = {
+            amount: 'Amount',
+            creditDebit: 'Credit / Debit',
+            date: 'Date',
+          };
+
+          /** Maps each logical field to the index of its column in the header row. */
+          function mapHeader(headerRow) {
+            const normalised = headerRow.map(normaliseKey);
+            const indexes = {};
+            for (const [field, aliases] of Object.entries(COLUMN_ALIASES)) {
+              for (const alias of aliases) {
+                const idx = normalised.indexOf(normaliseKey(alias));
+                if (idx !== -1) {
+                  indexes[field] = idx;
+                  break;
+                }
+              }
+            }
+            return indexes;
+          }
+
+          /**
+           * Parses an amount written with either a dot or a comma decimal separator and
+           * with optional thousands separators, brackets or a leading sign.
+           * Returns the absolute magnitude plus whether the source text was negative.
+           */
+          function parseAmount(raw) {
+            let text = String(raw == null ? '' : raw).trim();
+            if (text === '') return { value: null, negative: false };
+
+            let negative = false;
+            if (/^\(.*\)$/.test(text)) {
+              negative = true;
+              text = text.slice(1, -1);
+            }
+            text = text.replace(/[^\d.,+-]/g, '');
+            if (text.startsWith('-')) negative = true;
+            text = text.replace(/[+-]/g, '');
+            // Nothing numeric left (e.g. "abc"): not an amount.
+            if (!/\d/.test(text)) return { value: null, negative };
+
+            const lastComma = text.lastIndexOf(',');
+            const lastDot = text.lastIndexOf('.');
+            if (lastComma > lastDot) {
+              // 1.234,56 -> comma is the decimal separator
+              text = text.replace(/\./g, '').replace(',', '.');
+            } else {
+              // 1,234.56 -> comma is a thousands separator
+              text = text.replace(/,/g, '');
+            }
+
+            const value = Number(text);
+            if (!Number.isFinite(value)) return { value: null, negative };
+            return { value: Math.abs(value), negative: negative || value < 0 };
+          }
+
+          /** Parses DD/MM/YYYY (also DD-MM-YYYY, DD.MM.YYYY and YYYY-MM-DD). */
+          function parseDate(raw) {
+            const text = String(raw == null ? '' : raw).trim();
+            if (text === '') return null;
+
+            // The four-digit year alternative comes first so 04/09/2026 is not read as year 20.
+            const dayFirst = text.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4}|\d{2})(?!\d)/);
+            if (dayFirst) {
+              const day = Number(dayFirst[1]);
+              const month = Number(dayFirst[2]);
+              let year = Number(dayFirst[3]);
+              if (year < 100) year += year >= 70 ? 1900 : 2000;
+              return buildDate(year, month, day);
+            }
+
+            const isoLike = text.match(/^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/);
+            if (isoLike) {
+              return buildDate(Number(isoLike[1]), Number(isoLike[2]), Number(isoLike[3]));
+            }
+
+            return null;
+          }
+
+          function buildDate(year, month, day) {
+            if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+            const date = new Date(Date.UTC(year, month - 1, day));
+            if (
+              date.getUTCFullYear() !== year ||
+              date.getUTCMonth() !== month - 1 ||
+              date.getUTCDate() !== day
+            ) {
+              return null; // e.g. 31/02/2026
+            }
+            return date;
+          }
+
+          /** 'Credit' / 'C' / 'CR' -> 'Credit'; 'Debit' / 'D' / 'DR' -> 'Debit'. */
+          function parseCreditDebit(raw) {
+            const text = String(raw == null ? '' : raw).trim().toLowerCase();
+            if (text === '') return null;
+            if (/^c(r|redit)?$/.test(text) || text === 'credit') return 'Credit';
+            if (/^d(r|ebit)?$/.test(text) || text === 'debit') return 'Debit';
+            return null;
+          }
+
+          /** H -> Booked, P -> Pending (Lines_Mapping, LINESTATUS). Defaults to Booked. */
+          function parseLineStatus(raw) {
+            const text = String(raw == null ? '' : raw).trim().toLowerCase();
+            if (text === '') return 'Booked';
+            if (text.startsWith('h') || text.startsWith('booked') || text.startsWith('hist')) return 'Booked';
+            if (text.startsWith('p')) return 'Pending';
+            return 'Booked';
+          }
+
+          /**
+           * Parses the CSV text into transactions.
+           *
+           * @returns {{transactions: Array, errors: string[], warnings: string[], headers: string[], skippedRows: number}}
+           */
+          function parseTransactionsCsv(text) {
+            const errors = [];
+            const warnings = [];
+
+            const clean = String(text || '').replace(/^﻿/, '');
+            if (clean.trim() === '') {
+              return { transactions: [], errors: ['The CSV file is empty.'], warnings, headers: [], skippedRows: 0 };
+            }
+
+            const rows = parseDelimited(clean, detectDelimiter(clean));
+            if (rows.length === 0) {
+              return { transactions: [], errors: ['The CSV file has no rows.'], warnings, headers: [], skippedRows: 0 };
+            }
+
+            const headers = rows[0].map((h) => String(h).trim());
+            const idx = mapHeader(headers);
+
+            const missing = REQUIRED_COLUMNS.filter((f) => idx[f] === undefined);
+            if (missing.length > 0) {
+              errors.push(
+                `The CSV is missing required column(s): ${missing
+                  .map((f) => REQUIRED_COLUMN_LABELS[f])
+                  .join(', ')}. Columns found: ${headers.join(', ') || '(none)'}.`
+              );
+              return { transactions: [], errors, warnings, headers, skippedRows: 0 };
+            }
+
+            const get = (row, field) => (idx[field] === undefined ? '' : String(row[idx[field]] ?? '').trim());
+
+            const transactions = [];
+            let skippedRows = 0;
+
+            for (let i = 1; i < rows.length; i += 1) {
+              const row = rows[i];
+              const rowNumber = i + 1; // 1-based, counting the header row
+              const rowErrors = [];
+
+              const { value: magnitude, negative } = parseAmount(get(row, 'amount'));
+              if (magnitude === null) {
+                rowErrors.push(`row ${rowNumber}: Amount "${get(row, 'amount')}" is not a number`);
+              }
+
+              const date = parseDate(get(row, 'date'));
+              if (!date) {
+                rowErrors.push(`row ${rowNumber}: Date "${get(row, 'date')}" is not a valid date`);
+              }
+
+              let creditDebit = parseCreditDebit(get(row, 'creditDebit'));
+              if (!creditDebit) {
+                // Fall back to the sign of the amount when the indicator is unusable.
+                if (magnitude !== null) {
+                  creditDebit = negative ? 'Debit' : 'Credit';
+                  warnings.push(
+                    `Row ${rowNumber}: Credit / Debit value "${get(row, 'creditDebit')}" not recognised; ` +
+                      `treated as ${creditDebit} based on the amount sign.`
+                  );
+                } else {
+                  rowErrors.push(
+                    `row ${rowNumber}: Credit / Debit value "${get(row, 'creditDebit')}" is not recognised`
+                  );
+                }
+              }
+
+              if (rowErrors.length > 0) {
+                errors.push(...rowErrors);
+                skippedRows += 1;
+                continue;
+              }
+
+              transactions.push({
+                rowNumber,
+                ibanOrAccount: get(row, 'ibanOrAccount'),
+                lineStatus: parseLineStatus(get(row, 'pendingHistorical')),
+                amount: creditDebit === 'Debit' ? -magnitude : magnitude,
+                magnitude,
+                currency: get(row, 'currency').toUpperCase(),
+                creditDebit,
+                date,
+                narrative: get(row, 'narrative'),
+                balance: parseAmount(get(row, 'balance')).value,
+                reference: get(row, 'reference'),
+                creditorName: get(row, 'creditorName'),
+                debtorName: get(row, 'debtorName'),
+              });
+            }
+
+            if (transactions.length === 0 && errors.length === 0) {
+              errors.push('The CSV contains a header row but no transaction rows.');
+            }
+
+            return { transactions, errors, warnings, headers, skippedRows };
+          }
+
+          module.exports = {
+            parseTransactionsCsv,
+            parseDelimited,
+            detectDelimiter,
+            parseAmount,
+            parseDate,
+            parseCreditDebit,
+            parseLineStatus,
+            mapHeader,
+            normaliseKey,
+            COLUMN_ALIASES,
+          };
+
+        };
+
+        registry["transform"] = function (module, exports, require) {
+          'use strict';
+
+          /**
+           * Builds the Bank_statement_header and Bank_statement_lines rows from parsed
+           * CSV transactions, following Kepak_BankStatement_Mapping.xlsx.
+           */
+
+          const { accountSuffix, bankCode } = require('./account-utils');
+
+          /** Tolerance for the balance check: half a cent. */
+          const BALANCE_TOLERANCE = 0.005;
+
+          /** Amounts are carried to 6 decimal places, as micro-units internally. */
+          const SCALE = 1e6;
+
+          function toMicros(value) {
+            return Math.round(Number(value) * SCALE);
+          }
+
+          function fromMicros(micros) {
+            return micros / SCALE;
+          }
+
+          /** Rounds to the 6 decimal places the template uses. */
+          function round6(value) {
+            return fromMicros(toMicros(value));
+          }
+
+          function pad(value, length) {
+            return String(value).padStart(length, '0');
+          }
+
+          /** YYYY-MM-DD 00:00:00 (Header_Mapping / Lines_Mapping date format). */
+          function formatDateTime(date, endOfDay = false) {
+            const y = date.getUTCFullYear();
+            const m = pad(date.getUTCMonth() + 1, 2);
+            const d = pad(date.getUTCDate(), 2);
+            return `${y}-${m}-${d} ${endOfDay ? '23:59:59' : '00:00:00'}`;
+          }
+
+          /** DDMMYYYY, for the statement ID. */
+          function formatDdmmyyyy(date) {
+            return `${pad(date.getUTCDate(), 2)}${pad(date.getUTCMonth() + 1, 2)}${date.getUTCFullYear()}`;
+          }
+
+          /**
+           * Statement ID in the recommended BANK-CCY-ACCT-DDMMYYYY format, e.g.
+           * AIB-EUR-7268-04092026. The date is the statement period end date (the
+           * latest transaction date in the CSV).
+           */
+          function buildStatementId(account, statementDate) {
+            const parts = [bankCode(account), (account.currency || '').toUpperCase()];
+            const suffix = accountSuffix(account);
+            parts.push(suffix || account.bankAccount.replace(/[^A-Za-z0-9]/g, ''));
+            parts.push(formatDdmmyyyy(statementDate));
+            return parts.join('-');
+          }
+
+          /** Sum of the signed transaction amounts, rounded to 6 dp. */
+          function totalAmount(transactions) {
+            const micros = transactions.reduce((sum, t) => sum + toMicros(t.amount), 0);
+            return fromMicros(micros);
+          }
+
+          /**
+           * Checks opening + total transactions = closing.
+           *
+           * @returns {{valid: boolean, openingBalance: number, closingBalance: number,
+           *            transactionTotal: number, expectedClosingBalance: number,
+           *            difference: number, transactionCount: number,
+           *            creditTotal: number, debitTotal: number}}
+           */
+          function validateBalances(openingBalance, closingBalance, transactions) {
+            const opening = round6(openingBalance);
+            const closing = round6(closingBalance);
+            const total = totalAmount(transactions);
+            const expected = fromMicros(toMicros(opening) + toMicros(total));
+            const difference = fromMicros(toMicros(closing) - toMicros(expected));
+
+            const credits = transactions.filter((t) => t.amount > 0);
+            const debits = transactions.filter((t) => t.amount < 0);
+
+            return {
+              valid: Math.abs(difference) < BALANCE_TOLERANCE,
+              openingBalance: opening,
+              closingBalance: closing,
+              transactionTotal: total,
+              expectedClosingBalance: expected,
+              difference,
+              transactionCount: transactions.length,
+              creditCount: credits.length,
+              debitCount: debits.length,
+              creditTotal: totalAmount(credits),
+              debitTotal: totalAmount(debits),
+            };
+          }
+
+          /** Earliest and latest transaction dates, for FROMDATE / TODATE. */
+          function dateRange(transactions) {
+            const times = transactions.map((t) => t.date.getTime());
+            return {
+              from: new Date(Math.min(...times)),
+              to: new Date(Math.max(...times)),
+            };
+          }
+
+          const HEADER_COLUMNS = [
+            'STATEMENTID',
+            'BANKACCOUNT',
+            'CURRENCY',
+            'ENDINGBALANCE',
+            'FROMDATE',
+            'OPENINGBALANCE',
+            'TODATE',
+          ];
+
+          const LINE_COLUMNS = [
+            'LINENUMBER',
+            'BANKACCOUNT',
+            'STATEMENTID',
+            'BOOKINGDATE',
+            'AMOUNT',
+            'BANKSTATEMENTTRANSACTIONCODE',
+            'COUNTERAMOUNT',
+            'COUNTERCURRENCY',
+            'COUNTEREXCHANGERATE',
+            'CREDITORREFERENCEINFORMATION',
+            'DOCUMENTNUMBER',
+            'ENTRYREFERENCE',
+            'INSTRUCTEDAMOUNT',
+            'INSTRUCTEDCURRENCY',
+            'INSTRUCTEDEXCHANGERATE',
+            'LINESTATUS',
+            'REFERENCENUMBER',
+            'RELATEDBANK',
+            'RELATEDBANKACCOUNT',
+            'REVERSAL',
+            'TRADINGPARTY',
+          ];
+
+          /**
+           * Builds the statement from a selected account, verified balances and the
+           * parsed CSV transactions.
+           *
+           * @param {object} args
+           * @param {object} args.account      row from the account master list
+           * @param {number} args.openingBalance
+           * @param {number} args.closingBalance
+           * @param {Array}  args.transactions parsed CSV transactions
+           * @param {string} [args.statementId] override for the generated ID
+           */
+          function buildStatement({ account, openingBalance, closingBalance, transactions, statementId }) {
+            if (!account) throw new Error('An account must be selected.');
+            if (!Array.isArray(transactions) || transactions.length === 0) {
+              throw new Error('At least one transaction is required.');
+            }
+
+            const { from, to } = dateRange(transactions);
+            const id = statementId || buildStatementId(account, to);
+            const currency = (account.currency || '').toUpperCase();
+            const bankAccount = account.bankAccount;
+
+            const header = {
+              STATEMENTID: id,
+              BANKACCOUNT: bankAccount,
+              CURRENCY: currency,
+              ENDINGBALANCE: round6(closingBalance),
+              FROMDATE: formatDateTime(from, false),
+              OPENINGBALANCE: round6(openingBalance),
+              TODATE: formatDateTime(to, true),
+            };
+
+            // Lines are ordered by booking date, keeping CSV order within a date.
+            const ordered = transactions
+              .map((t, i) => ({ t, i }))
+              .sort((a, b) => a.t.date - b.t.date || a.i - b.i)
+              .map(({ t }) => t);
+
+            const lines = ordered.map((t, index) => ({
+              LINENUMBER: index + 1,
+              BANKACCOUNT: bankAccount,
+              STATEMENTID: id,
+              BOOKINGDATE: formatDateTime(t.date, false),
+              AMOUNT: round6(t.amount),
+              BANKSTATEMENTTRANSACTIONCODE: '',
+              COUNTERAMOUNT: 0,
+              COUNTERCURRENCY: '',
+              COUNTEREXCHANGERATE: 0,
+              CREDITORREFERENCEINFORMATION: '',
+              DOCUMENTNUMBER: '',
+              ENTRYREFERENCE: t.narrative || '',
+              INSTRUCTEDAMOUNT: 0,
+              INSTRUCTEDCURRENCY: '',
+              INSTRUCTEDEXCHANGERATE: 0,
+              LINESTATUS: t.lineStatus || 'Booked',
+              REFERENCENUMBER: t.reference || '',
+              RELATEDBANK: '',
+              RELATEDBANKACCOUNT: '',
+              REVERSAL: 'No',
+              // Credit rows -> the payer (Debtor Name); Debit rows -> the payee (Creditor Name).
+              TRADINGPARTY: t.creditDebit === 'Debit' ? t.creditorName || '' : t.debtorName || '',
+            }));
+
+            return { statementId: id, header, lines, fromDate: from, toDate: to };
+          }
+
+          /** Digits of the IBAN/account text in the CSV, for the account cross-check. */
+          function digitsOf(value) {
+            return (String(value || '').match(/\d/g) || []).join('');
+          }
+
+          /**
+           * Non-fatal checks between the CSV contents and the selected account: does the
+           * CSV IBAN belong to this account, and does the CSV currency match?
+           */
+          function crossCheckAccount(account, transactions) {
+            const warnings = [];
+            const accountCurrency = (account.currency || '').toUpperCase();
+
+            const csvIbans = [...new Set(transactions.map((t) => t.ibanOrAccount).filter(Boolean))];
+            if (csvIbans.length > 1) {
+              warnings.push(
+                `The CSV contains more than one account: ${csvIbans.join(', ')}. ` +
+                  'All lines will be imported against the selected account.'
+              );
+            }
+
+            const accountDigits = digitsOf(account.iban) || digitsOf(account.accountNumber);
+            for (const iban of csvIbans) {
+              const csvDigits = digitsOf(iban);
+              const matches =
+                accountDigits &&
+                csvDigits &&
+                (csvDigits === accountDigits ||
+                  accountDigits.endsWith(csvDigits) ||
+                  csvDigits.endsWith(accountDigits.slice(-8)));
+              if (!matches) {
+                warnings.push(
+                  `The CSV account "${iban}" does not look like the selected account ` +
+                    `${account.entity} ${account.bankAccount} (${account.iban || account.accountNumber || 'no IBAN on file'}). ` +
+                    'Check you picked the right account before importing.'
+                );
+              }
+            }
+
+            const csvCurrencies = [...new Set(transactions.map((t) => t.currency).filter(Boolean))];
+            for (const ccy of csvCurrencies) {
+              if (accountCurrency && ccy !== accountCurrency) {
+                warnings.push(
+                  `The CSV contains ${ccy} transactions but the selected account is ${accountCurrency}. ` +
+                    `The statement will be created in ${accountCurrency}.`
+                );
+              }
+            }
+
+            return warnings;
+          }
+
+          module.exports = {
+            buildStatement,
+            buildStatementId,
+            validateBalances,
+            crossCheckAccount,
+            totalAmount,
+            dateRange,
+            formatDateTime,
+            formatDdmmyyyy,
+            round6,
+            HEADER_COLUMNS,
+            LINE_COLUMNS,
+            BALANCE_TOLERANCE,
+          };
+
+        };
+
+        registry["xlsx-browser"] = function (module, exports, require) {
+          'use strict';
+
+          /**
+           * Writes the statement workbook with no dependencies, so the standalone
+           * single-file tool works in a browser with nothing installed and no network.
+           *
+           * An .xlsx file is a ZIP of XML parts. Entries are stored uncompressed, which
+           * Excel, the Open XML SDK and D365 all accept, and which keeps this to a
+           * CRC-32 plus the ZIP headers rather than a deflate implementation.
+           *
+           * The sheet names, column order and cell types match what the server-side
+           * writer produces from the real template; a test asserts the two agree
+           * cell for cell.
+           */
+
+          const { HEADER_COLUMNS, LINE_COLUMNS } = require('./transform');
+
+          const HEADER_SHEET = 'Bank_statement_header';
+          const LINES_SHEET = 'Bank_statement_lines';
+
+          /* Style indexes defined in styles.xml below. */
+          const STYLE_PLAIN = 0;
+          const STYLE_AMOUNT = 1; // 0.000000
+          const STYLE_RATE = 2; // 0.0000000000000000
+
+          const HEADER_AMOUNT_FIELDS = ['ENDINGBALANCE', 'OPENINGBALANCE'];
+          const LINE_AMOUNT_FIELDS = ['AMOUNT', 'COUNTERAMOUNT', 'INSTRUCTEDAMOUNT'];
+          const LINE_RATE_FIELDS = ['COUNTEREXCHANGERATE', 'INSTRUCTEDEXCHANGERATE'];
+
+          /* ------------------------------------------------------------------ XML */
+
+          /**
+           * XML 1.0 permits only tab, newline, carriage return and characters from 0x20
+           * up. Anything lower is dropped rather than escaped, since it cannot be
+           * represented and would make the file unreadable.
+           */
+          function stripIllegalXmlChars(text) {
+            let out = '';
+            for (let i = 0; i < text.length; i += 1) {
+              const code = text.charCodeAt(i);
+              if (code === 9 || code === 10 || code === 13 || code >= 32) out += text[i];
+            }
+            return out;
+          }
+
+          function escapeXml(value) {
+            return stripIllegalXmlChars(String(value))
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&apos;');
+          }
+
+
+          /** 1 -> A, 26 -> Z, 27 -> AA. */
+          function columnLetter(index) {
+            let n = index;
+            let letters = '';
+            while (n > 0) {
+              const rem = (n - 1) % 26;
+              letters = String.fromCharCode(65 + rem) + letters;
+              n = Math.floor((n - 1) / 26);
+            }
+            return letters;
+          }
+
+          /**
+           * Builds one sheet's XML. Strings go into the shared string table, numbers are
+           * written inline, and blanks are omitted so the cell reads as empty.
+           */
+          function sheetXml(columns, records, styleFor, strings) {
+            const rows = [];
+
+            const headerCells = columns
+              .map((name, i) => {
+                const ref = `${columnLetter(i + 1)}1`;
+                return `<c r="${ref}" t="s"><v>${strings.index(name)}</v></c>`;
+              })
+              .join('');
+            rows.push(`<row r="1">${headerCells}</row>`);
+
+            records.forEach((record, rowIndex) => {
+              const rowNumber = rowIndex + 2;
+              const cells = columns
+                .map((name, i) => {
+                  const value = record[name];
+                  if (value === '' || value === null || value === undefined) return '';
+                  const ref = `${columnLetter(i + 1)}${rowNumber}`;
+                  const style = styleFor(name);
+                  const styleAttr = style === STYLE_PLAIN ? '' : ` s="${style}"`;
+                  if (typeof value === 'number') {
+                    if (!Number.isFinite(value)) throw new Error(`${name} is not a finite number.`);
+                    return `<c r="${ref}"${styleAttr}><v>${numberText(value)}</v></c>`;
+                  }
+                  return `<c r="${ref}"${styleAttr} t="s"><v>${strings.index(String(value))}</v></c>`;
+                })
+                .join('');
+              rows.push(`<row r="${rowNumber}">${cells}</row>`);
+            });
+
+            return (
+              '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+              '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+              `<sheetData>${rows.join('')}</sheetData>` +
+              '</worksheet>'
+            );
+          }
+
+          /**
+           * Numbers are stored to 6 decimal places without exponent notation, since
+           * Excel does not accept 1e-7 style values in a <v> element.
+           */
+          function numberText(value) {
+            if (Number.isInteger(value)) return String(value);
+            const fixed = value.toFixed(6);
+            // Trim trailing zeros but keep at least one decimal digit.
+            return fixed.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+          }
+
+          function stringTable() {
+            const order = [];
+            const seen = new Map();
+            return {
+              index(text) {
+                if (seen.has(text)) return seen.get(text);
+                const i = order.length;
+                seen.set(text, i);
+                order.push(text);
+                return i;
+              },
+              xml() {
+                return (
+                  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+                  `<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${order.length}" uniqueCount="${order.length}">` +
+                  order.map((s) => `<si><t xml:space="preserve">${escapeXml(s)}</t></si>`).join('') +
+                  '</sst>'
+                );
+              },
+            };
+          }
+
+          const CONTENT_TYPES_XML =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+            '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+            '<Default Extension="xml" ContentType="application/xml"/>' +
+            '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+            '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+            '<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' +
+            '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+            '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>' +
+            '</Types>';
+
+          const ROOT_RELS_XML =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+            '</Relationships>';
+
+          const WORKBOOK_XML =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">' +
+            '<sheets>' +
+            `<sheet name="${HEADER_SHEET}" sheetId="1" r:id="rId1"/>` +
+            `<sheet name="${LINES_SHEET}" sheetId="2" r:id="rId2"/>` +
+            '</sheets>' +
+            '</workbook>';
+
+          const WORKBOOK_RELS_XML =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+            '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>' +
+            '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>' +
+            '<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+            '<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>' +
+            '</Relationships>';
+
+          const STYLES_XML =
+            '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+            '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+            '<numFmts count="2">' +
+            '<numFmt numFmtId="164" formatCode="0.000000"/>' +
+            '<numFmt numFmtId="165" formatCode="0.0000000000000000"/>' +
+            '</numFmts>' +
+            '<fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/></font></fonts>' +
+            '<fills count="2">' +
+            '<fill><patternFill patternType="none"/></fill>' +
+            '<fill><patternFill patternType="gray125"/></fill>' +
+            '</fills>' +
+            '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
+            '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+            '<cellXfs count="3">' +
+            '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+            '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+            '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+            '</cellXfs>' +
+            '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+            '</styleSheet>';
+
+          /* ------------------------------------------------------------------ ZIP */
+
+          let crcTable = null;
+
+          function crc32Table() {
+            if (crcTable) return crcTable;
+            crcTable = new Int32Array(256);
+            for (let i = 0; i < 256; i += 1) {
+              let c = i;
+              for (let k = 0; k < 8; k += 1) {
+                c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+              }
+              crcTable[i] = c;
+            }
+            return crcTable;
+          }
+
+          function crc32(bytes) {
+            const table = crc32Table();
+            let crc = -1;
+            for (let i = 0; i < bytes.length; i += 1) {
+              crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xff];
+            }
+            return (crc ^ -1) >>> 0;
+          }
+
+          function utf8(text) {
+            return new TextEncoder().encode(text);
+          }
+
+          /** MS-DOS date and time, as the ZIP local/central headers store them. */
+          function dosDateTime(date) {
+            const year = Math.max(1980, date.getFullYear());
+            return {
+              time:
+                (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+              date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+            };
+          }
+
+          /** Builds a ZIP archive from [{name, data: Uint8Array}] with stored entries. */
+          function zip(entries, now = new Date()) {
+            const { time, date } = dosDateTime(now);
+            const chunks = [];
+            const central = [];
+            let offset = 0;
+
+            for (const entry of entries) {
+              const nameBytes = utf8(entry.name);
+              const crc = crc32(entry.data);
+              const size = entry.data.length;
+
+              const local = new Uint8Array(30 + nameBytes.length);
+              const lv = new DataView(local.buffer);
+              lv.setUint32(0, 0x04034b50, true); // local file header signature
+              lv.setUint16(4, 20, true); // version needed
+              lv.setUint16(6, 0x0800, true); // flags: UTF-8 file names
+              lv.setUint16(8, 0, true); // method: stored
+              lv.setUint16(10, time, true);
+              lv.setUint16(12, date, true);
+              lv.setUint32(14, crc, true);
+              lv.setUint32(18, size, true); // compressed size
+              lv.setUint32(22, size, true); // uncompressed size
+              lv.setUint16(26, nameBytes.length, true);
+              lv.setUint16(28, 0, true); // extra field length
+              local.set(nameBytes, 30);
+
+              chunks.push(local, entry.data);
+
+              const dir = new Uint8Array(46 + nameBytes.length);
+              const dv = new DataView(dir.buffer);
+              dv.setUint32(0, 0x02014b50, true); // central directory signature
+              dv.setUint16(4, 20, true); // version made by
+              dv.setUint16(6, 20, true); // version needed
+              dv.setUint16(8, 0x0800, true);
+              dv.setUint16(10, 0, true);
+              dv.setUint16(12, time, true);
+              dv.setUint16(14, date, true);
+              dv.setUint32(16, crc, true);
+              dv.setUint32(20, size, true);
+              dv.setUint32(24, size, true);
+              dv.setUint16(28, nameBytes.length, true);
+              dv.setUint16(30, 0, true); // extra
+              dv.setUint16(32, 0, true); // comment
+              dv.setUint16(34, 0, true); // disk number
+              dv.setUint16(36, 0, true); // internal attributes
+              dv.setUint32(38, 0, true); // external attributes
+              dv.setUint32(42, offset, true); // offset of local header
+              dir.set(nameBytes, 46);
+              central.push(dir);
+
+              offset += local.length + size;
+            }
+
+            const centralSize = central.reduce((sum, c) => sum + c.length, 0);
+            const end = new Uint8Array(22);
+            const ev = new DataView(end.buffer);
+            ev.setUint32(0, 0x06054b50, true); // end of central directory signature
+            ev.setUint16(8, entries.length, true);
+            ev.setUint16(10, entries.length, true);
+            ev.setUint32(12, centralSize, true);
+            ev.setUint32(16, offset, true);
+
+            const all = [...chunks, ...central, end];
+            const total = all.reduce((sum, c) => sum + c.length, 0);
+            const out = new Uint8Array(total);
+            let at = 0;
+            for (const chunk of all) {
+              out.set(chunk, at);
+              at += chunk.length;
+            }
+            return out;
+          }
+
+          /* -------------------------------------------------------------- public */
+
+          function headerStyleFor(name) {
+            return HEADER_AMOUNT_FIELDS.indexOf(name) !== -1 ? STYLE_AMOUNT : STYLE_PLAIN;
+          }
+
+          function lineStyleFor(name) {
+            if (LINE_AMOUNT_FIELDS.indexOf(name) !== -1) return STYLE_AMOUNT;
+            if (LINE_RATE_FIELDS.indexOf(name) !== -1) return STYLE_RATE;
+            return STYLE_PLAIN;
+          }
+
+          /**
+           * Renders the statement as xlsx bytes.
+           *
+           * @param {{header: object, lines: object[]}} statement
+           * @param {Date} [now] archive timestamp, fixed by tests for reproducibility
+           * @returns {Uint8Array}
+           */
+          function renderStatementXlsx(statement, now) {
+            const strings = stringTable();
+            const sheet1 = sheetXml(HEADER_COLUMNS, [statement.header], headerStyleFor, strings);
+            const sheet2 = sheetXml(LINE_COLUMNS, statement.lines, lineStyleFor, strings);
+
+            // sharedStrings is built last: both sheets must have populated the table.
+            return zip(
+              [
+                { name: '[Content_Types].xml', data: utf8(CONTENT_TYPES_XML) },
+                { name: '_rels/.rels', data: utf8(ROOT_RELS_XML) },
+                { name: 'xl/workbook.xml', data: utf8(WORKBOOK_XML) },
+                { name: 'xl/_rels/workbook.xml.rels', data: utf8(WORKBOOK_RELS_XML) },
+                { name: 'xl/styles.xml', data: utf8(STYLES_XML) },
+                { name: 'xl/sharedStrings.xml', data: utf8(strings.xml()) },
+                { name: 'xl/worksheets/sheet1.xml', data: utf8(sheet1) },
+                { name: 'xl/worksheets/sheet2.xml', data: utf8(sheet2) },
+              ],
+              now
+            );
+          }
+
+          module.exports = {
+            renderStatementXlsx,
+            columnLetter,
+            numberText,
+            escapeXml,
+            stripIllegalXmlChars,
+            crc32,
+            zip,
+            HEADER_SHEET,
+            LINES_SHEET,
+          };
+
+        };
+
+        registry["responses"] = function (module, exports, require) {
+          'use strict';
+
+          /**
+           * The application logic behind each step, shaped as the responses the front end
+           * consumes. Kept free of Node and DOM dependencies so the Express server and
+           * the standalone single-file browser tool both run this exact code.
+           *
+           * Failures throw an AppError carrying the HTTP status the server should use.
+           */
+
+          const { parseTransactionsCsv } = require('./csv');
+          const utils = require('./account-utils');
+          const {
+            buildStatement,
+            buildStatementId,
+            validateBalances,
+            crossCheckAccount,
+          } = require('./transform');
+
+          class AppError extends Error {
+            constructor(message, status, extra) {
+              super(message);
+              this.name = 'AppError';
+              this.status = status || 400;
+              Object.assign(this, extra || {});
+            }
+          }
+
+          /** Accepts "1,234.56", "1.234,56", "(500)" and plain numbers. */
+          function parseNumber(value) {
+            if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+            let text = String(value == null ? '' : value).trim();
+            if (text === '') return null;
+
+            let negative = false;
+            if (/^\(.*\)$/.test(text)) {
+              negative = true;
+              text = text.slice(1, -1);
+            }
+            text = text.replace(/[^\d.,+-]/g, '');
+            if (text.startsWith('-')) {
+              negative = !negative;
+              text = text.slice(1);
+            }
+            text = text.replace(/[+]/g, '');
+            if (!/\d/.test(text)) return null;
+
+            const lastComma = text.lastIndexOf(',');
+            const lastDot = text.lastIndexOf('.');
+            text = lastComma > lastDot ? text.replace(/\./g, '').replace(',', '.') : text.replace(/,/g, '');
+
+            const num = Number(text);
+            if (!Number.isFinite(num)) return null;
+            return negative ? -num : num;
+          }
+
+          /** Step 1: the accounts a user may reconcile, with display fields added. */
+          function accountsResponse(accounts) {
+            return utils.selectable(accounts).map((a) => ({
+              id: a.id,
+              entity: a.entity,
+              bankAccount: a.bankAccount,
+              name: a.name,
+              currency: a.currency,
+              iban: a.iban,
+              accountNumber: a.accountNumber,
+              mainAccount: a.mainAccount,
+              swift: a.swift,
+              label: utils.accountLabel(a),
+              statementIdPrefix: utils.statementIdPrefix(a),
+            }));
+          }
+
+          function requireAccount(accounts, accountId, message) {
+            const account = utils.findById(accounts, accountId);
+            if (!account) {
+              throw new AppError(message || 'Select an account first.', 400);
+            }
+            return account;
+          }
+
+          /** Step 2: parse a transactions CSV and summarise what was found. */
+          function transactionsResponse({ accounts, accountId, fileName, csvText }) {
+            const account = requireAccount(
+              accounts,
+              accountId,
+              'Select an account before uploading a CSV file.'
+            );
+
+            const parsed = parseTransactionsCsv(csvText);
+            if (parsed.transactions.length === 0) {
+              throw new AppError('No usable transactions could be read from the CSV file.', 422, {
+                details: parsed.errors,
+              });
+            }
+
+            const warnings = [...parsed.warnings, ...crossCheckAccount(account, parsed.transactions)];
+            if (parsed.skippedRows > 0) {
+              warnings.unshift(
+                `${parsed.skippedRows} row(s) could not be read and were skipped. Fix the CSV and re-upload ` +
+                  'if those rows belong in the statement.'
+              );
+            }
+
+            const summary = validateBalances(0, 0, parsed.transactions);
+            const times = parsed.transactions.map((t) => t.date.getTime());
+
+            return {
+              fileName,
+              headers: parsed.headers,
+              transactionCount: parsed.transactions.length,
+              creditCount: summary.creditCount,
+              debitCount: summary.debitCount,
+              creditTotal: summary.creditTotal,
+              debitTotal: summary.debitTotal,
+              transactionTotal: summary.transactionTotal,
+              fromDate: isoDay(Math.min(...times)),
+              toDate: isoDay(Math.max(...times)),
+              rowErrors: parsed.errors,
+              warnings,
+              transactions: parsed.transactions.map(serialiseTransaction),
+            };
+          }
+
+          /** Step 3: check opening + transactions = closing. */
+          function verifyResponse({ accounts, accountId, openingBalance, closingBalance, transactions }) {
+            const account = requireAccount(accounts, accountId);
+
+            const opening = parseNumber(openingBalance);
+            const closing = parseNumber(closingBalance);
+            if (opening === null || closing === null) {
+              throw new AppError(
+                'Enter both an opening balance and a closing balance as numbers.',
+                400
+              );
+            }
+
+            const parsedTransactions = deserialiseTransactions(transactions);
+            if (parsedTransactions.length === 0) {
+              throw new AppError('Upload a transactions CSV first.', 400);
+            }
+
+            const result = validateBalances(opening, closing, parsedTransactions);
+            const statementDate = new Date(Math.max(...parsedTransactions.map((t) => t.date.getTime())));
+
+            return {
+              ...result,
+              currency: (account.currency || '').toUpperCase(),
+              statementId: buildStatementId(account, statementDate),
+              message: result.valid
+                ? 'Balances verified: opening balance plus the transaction total equals the closing balance.'
+                : 'The balances do not reconcile. Opening balance plus the transaction total does not equal ' +
+                  'the closing balance, so one of the balances must be wrong. Please re-enter them.',
+            };
+          }
+
+          /**
+           * Step 4: validate once more, then build the statement. The balance check runs
+           * here as well as in step 3, so no caller can produce an unreconciled file.
+           */
+          function prepareStatement({ accounts, accountId, openingBalance, closingBalance, transactions }) {
+            const account = requireAccount(accounts, accountId);
+
+            const opening = parseNumber(openingBalance);
+            const closing = parseNumber(closingBalance);
+            if (opening === null || closing === null) {
+              throw new AppError('Enter both an opening balance and a closing balance.', 400);
+            }
+
+            const parsedTransactions = deserialiseTransactions(transactions);
+            if (parsedTransactions.length === 0) {
+              throw new AppError('Upload a transactions CSV first.', 400);
+            }
+
+            const check = validateBalances(opening, closing, parsedTransactions);
+            if (!check.valid) {
+              throw new AppError(
+                'The balances do not reconcile, so no file was generated. Opening balance plus the ' +
+                  'transaction total does not equal the closing balance.',
+                422,
+                { validation: check }
+              );
+            }
+
+            const statement = buildStatement({
+              account,
+              openingBalance: opening,
+              closingBalance: closing,
+              transactions: parsedTransactions,
+            });
+
+            return { statement, fileName: statementFileName(statement.statementId) };
+          }
+
+          /** Sanitises a statement ID for use as a file name. */
+          function statementFileName(statementId) {
+            const safe = String(statementId).replace(/[^A-Za-z0-9._-]/g, '_');
+            return `${safe}.xlsx`;
+          }
+
+          function serialiseTransaction(t) {
+            return {
+              rowNumber: t.rowNumber,
+              ibanOrAccount: t.ibanOrAccount,
+              lineStatus: t.lineStatus,
+              amount: t.amount,
+              currency: t.currency,
+              creditDebit: t.creditDebit,
+              date: isoDay(t.date.getTime()),
+              narrative: t.narrative,
+              reference: t.reference,
+              creditorName: t.creditorName,
+              debtorName: t.debtorName,
+            };
+          }
+
+          /** Rebuilds transactions handed back by the front end, revalidating each field. */
+          function deserialiseTransactions(raw) {
+            if (!Array.isArray(raw)) return [];
+            const out = [];
+            for (const t of raw) {
+              const amount = Number(t && t.amount);
+              const date = t && typeof t.date === 'string' ? new Date(`${t.date}T00:00:00Z`) : null;
+              if (!Number.isFinite(amount) || !date || Number.isNaN(date.getTime())) continue;
+              out.push({
+                rowNumber: t.rowNumber,
+                ibanOrAccount: str(t.ibanOrAccount),
+                lineStatus: t.lineStatus === 'Pending' ? 'Pending' : 'Booked',
+                amount,
+                currency: str(t.currency).toUpperCase(),
+                creditDebit: amount < 0 ? 'Debit' : 'Credit',
+                date,
+                narrative: str(t.narrative),
+                reference: str(t.reference),
+                creditorName: str(t.creditorName),
+                debtorName: str(t.debtorName),
+              });
+            }
+            return out;
+          }
+
+          function str(value) {
+            return value == null ? '' : String(value);
+          }
+
+          function isoDay(time) {
+            return new Date(time).toISOString().slice(0, 10);
+          }
+
+          module.exports = {
+            AppError,
+            accountsResponse,
+            transactionsResponse,
+            verifyResponse,
+            prepareStatement,
+            statementFileName,
+            deserialiseTransactions,
+            parseNumber,
+          };
+
+        };
+
+        return {
+          accounts: [
+        {
+          "id": "AT:CAD-DEB",
+          "entity": "AT",
+          "bankAccount": "CAD-DEB",
+          "name": "MUST BE EXCLUDED",
+          "currency": "CAD",
+          "bankGroup": "",
+          "routingNumber": "930067",
+          "accountNumber": "26759082",
+          "mainAccount": "35430",
+          "iban": "IE68AIBK93006726759082",
+          "swift": "AIBKIE2D",
+          "excluded": true
+        },
+        {
+          "id": "AT:EUR-CUR",
+          "entity": "AT",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "931101",
+          "accountNumber": "44976078",
+          "mainAccount": "30010",
+          "iban": "IE49AIBK93110144976078",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "AT:EUR-DEB",
+          "entity": "AT",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "937142",
+          "accountNumber": "20756245",
+          "mainAccount": "30030",
+          "iban": "IE73AIBK93714220756245",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "AT:EUR-LIV",
+          "entity": "AT",
+          "bankAccount": "EUR-LIV",
+          "name": "Livestock Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "931101",
+          "accountNumber": "44976151",
+          "mainAccount": "30050",
+          "iban": "IE18AIBK93110144976151",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "AT:GBP-DEB",
+          "entity": "AT",
+          "bankAccount": "GBP-DEB",
+          "name": "Debtors Account: Sterling",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "30040",
+          "iban": "GB70AIBK23848204510072",
+          "swift": "AIBKGB2L",
+          "excluded": false
+        },
+        {
+          "id": "AT:SEK-DEB",
+          "entity": "AT",
+          "bankAccount": "SEK-DEB",
+          "name": "MUST BE EXCLUDED",
+          "currency": "SEK",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "IE98AIBK93006718849453",
+          "swift": "AIBKIE2D",
+          "excluded": true
+        },
+        {
+          "id": "AM:EUR-CUR",
+          "entity": "AM",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "150325004",
+          "mainAccount": "30010",
+          "iban": "IE19AIBK93110150325004",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CL:EUR-CUR",
+          "entity": "CL",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "14009124",
+          "mainAccount": "30010",
+          "iban": "IE11AIBK93110114009124",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CL:EUR-DEB",
+          "entity": "CL",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "14007268",
+          "mainAccount": "30030",
+          "iban": "IE71AIBK93110114007268",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CL:EUR-LIV",
+          "entity": "CL",
+          "bankAccount": "EUR-LIV",
+          "name": "Livestock Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "13950054",
+          "mainAccount": "30050",
+          "iban": "IE27AIBK93110113950054",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CL:GBP-DEB",
+          "entity": "CL",
+          "bankAccount": "GBP-DEB",
+          "name": "Debtors Account: Sterling",
+          "currency": "GBP",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "204511047",
+          "mainAccount": "30040",
+          "iban": "GB32AIBK23848204511047",
+          "swift": "AIBKGB2L",
+          "excluded": false
+        },
+        {
+          "id": "CL:IC CBIR",
+          "entity": "CL",
+          "bankAccount": "IC CBIR",
+          "name": "CL Recipts In CBIR",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "xxxxxxx",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CL:IC CBIR £",
+          "entity": "CL",
+          "bankAccount": "IC CBIR £",
+          "name": "CL Receipts In CBIR",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "31010",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:CAD-DEB",
+          "entity": "CBIR",
+          "bankAccount": "CAD-DEB",
+          "name": "Group Intercompany: Canadian Dollar",
+          "currency": "CAD",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:EUR-CUR",
+          "entity": "CBIR",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "44975187",
+          "mainAccount": "30010",
+          "iban": "IE50AIBK93110144975187",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:EUR-DEB",
+          "entity": "CBIR",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "14007268",
+          "mainAccount": "30030",
+          "iban": "IE71AIBK93110114007268",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:GBP-DEB",
+          "entity": "CBIR",
+          "bankAccount": "GBP-DEB",
+          "name": "Debtors Account: Sterling",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "238482",
+          "accountNumber": "27608051",
+          "mainAccount": "30040",
+          "iban": "GB35AIBK23848227608051",
+          "swift": "AIBKGB2L",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:GBP-ICO",
+          "entity": "CBIR",
+          "bankAccount": "GBP-ICO",
+          "name": "Group Intercompany: Sterling",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:USD-CUR",
+          "entity": "CBIR",
+          "bankAccount": "USD-CUR",
+          "name": "Current Account: Dollar",
+          "currency": "USD",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CBIR:USD-DEB2",
+          "entity": "CBIR",
+          "bankAccount": "USD-DEB2",
+          "name": "Group Intercompany: US Dollar",
+          "currency": "USD",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CM:EUR-CUR",
+          "entity": "CM",
+          "bankAccount": "EUR-CUR",
+          "name": "AIB Capel Street",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "04590182",
+          "mainAccount": "30010",
+          "iban": "IE46AIBK93110104590182",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CK:EUR-CUR",
+          "entity": "CK",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "44975187",
+          "mainAccount": "30010",
+          "iban": "IE67AIBK93110144890006",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CK:EUR-DEB",
+          "entity": "CK",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "936081",
+          "accountNumber": "1228029",
+          "mainAccount": "30030",
+          "iban": "IE45AIBK93608101228029",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CK:EUR-LIV",
+          "entity": "CK",
+          "bankAccount": "EUR-LIV",
+          "name": "Livestock Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "44890196",
+          "mainAccount": "30050",
+          "iban": "IE78AIBK93110144890196",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "CK:EUR-PCO",
+          "entity": "CK",
+          "bankAccount": "EUR-PCO",
+          "name": "Petty Cash: Office",
+          "currency": "EUR",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "30060",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "CK:GBP-DEB",
+          "entity": "CK",
+          "bankAccount": "GBP-DEB",
+          "name": "Debtors Account: Sterling",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "238482",
+          "accountNumber": "27608051",
+          "mainAccount": "30040",
+          "iban": "GB75AIBK23848204127026",
+          "swift": "AIBKGB2L",
+          "excluded": false
+        },
+        {
+          "id": "CK:IC GBP",
+          "entity": "CK",
+          "bankAccount": "IC GBP",
+          "name": "IC Stg",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": false
+        },
+        {
+          "id": "KB:EUR-CUR",
+          "entity": "KB",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "27192461",
+          "mainAccount": "30010",
+          "iban": "IE45AIBK93110127192461",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "KB:EUR-DEB",
+          "entity": "KB",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "27192545",
+          "mainAccount": "30030",
+          "iban": "IE08AIBK93110127192545",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "KB:EUR-LIV",
+          "entity": "KB",
+          "bankAccount": "EUR-LIV",
+          "name": "Livestock Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "27192628",
+          "mainAccount": "30050",
+          "iban": "IE95AIBK93110127192628",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "LD:CAD-DEB",
+          "entity": "LD",
+          "bankAccount": "CAD-DEB",
+          "name": "MUST BE DELETED",
+          "currency": "CAD",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": true
+        },
+        {
+          "id": "LD:DKK-DEB",
+          "entity": "LD",
+          "bankAccount": "DKK-DEB",
+          "name": "MUST BE DELETED",
+          "currency": "DKK",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": true
+        },
+        {
+          "id": "LD:EUR-CUR",
+          "entity": "LD",
+          "bankAccount": "EUR-CUR",
+          "name": "Current Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "931101",
+          "accountNumber": "44975187",
+          "mainAccount": "30010",
+          "iban": "IE50AIBK93110144975187",
+          "swift": "AIBKIE2D",
+          "excluded": false
+        },
+        {
+          "id": "LD:EUR-DEB",
+          "entity": "LD",
+          "bankAccount": "EUR-DEB",
+          "name": "Debtors Account: Euro",
+          "currency": "EUR",
+          "bankGroup": "AIBCAP",
+          "routingNumber": "",
+          "accountNumber": "21450023",
+          "mainAccount": "30030",
+          "iban": "IE57AIBK93226421450023",
+          "swift": "AIBKIE2DXXX",
+          "excluded": false
+        },
+        {
+          "id": "LD:GBP-DEB",
+          "entity": "LD",
+          "bankAccount": "GBP-DEB",
+          "name": "Debtors Account: Sterling",
+          "currency": "GBP",
+          "bankGroup": "",
+          "routingNumber": "238482",
+          "accountNumber": "27608051",
+          "mainAccount": "30040",
+          "iban": "GB35AIBK23848227608051",
+          "swift": "AIBKGB2L",
+          "excluded": false
+        },
+        {
+          "id": "LD:SEK-DEB",
+          "entity": "LD",
+          "bankAccount": "SEK-DEB",
+          "name": "MUST BE DELETED",
+          "currency": "SEK",
+          "bankGroup": "",
+          "routingNumber": "930067",
+          "accountNumber": "16360032",
+          "mainAccount": "35430",
+          "iban": "IE61AIBK93006716360032",
+          "swift": "AIBKIE2D",
+          "excluded": true
+        },
+        {
+          "id": "LD:USD-DEB",
+          "entity": "LD",
+          "bankAccount": "USD-DEB",
+          "name": "MUST BE DELETED",
+          "currency": "USD",
+          "bankGroup": "",
+          "routingNumber": "",
+          "accountNumber": "",
+          "mainAccount": "35430",
+          "iban": "",
+          "swift": "",
+          "excluded": true
+        }
+      ],
+          accountUtils: require('account-utils'),
+          csv: require('csv'),
+          transform: require('transform'),
+          xlsx: require('xlsx-browser'),
+          responses: require('responses')
+        };
+      })();
+    </script>
+    <script>
+      'use strict';
+
+      /**
+       * Runs every step in the browser, with no server, using the bundled core
+       * modules (BankStatementCore). Used by the standalone single-file tool; it
+       * exposes the same interface as api-http.js so app.js is unchanged.
+       */
+
+      window.API = (function () {
+        const core = window.BankStatementCore;
+        const accountsData = core.accounts;
+
+        function toAppError(err) {
+          // AppError from responses.js already carries error/details/validation.
+          const out = new Error(err.message);
+          if (err.details) out.details = err.details;
+          if (err.validation) out.validation = err.validation;
+          return out;
+        }
+
+        function run(fn) {
+          return new Promise((resolve, reject) => {
+            try {
+              resolve(fn());
+            } catch (err) {
+              reject(toAppError(err));
+            }
+          });
+        }
+
+        function readFile(file) {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onerror = () => reject(new Error(`The file "${file.name}" could not be read.`));
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.readAsText(file);
+          });
+        }
+
+        return {
+          accounts() {
+            return run(() => core.responses.accountsResponse(accountsData));
+          },
+
+          async parseCsv(accountId, file) {
+            const csvText = await readFile(file);
+            return run(() =>
+              core.responses.transactionsResponse({
+                accounts: accountsData,
+                accountId,
+                fileName: file.name,
+                csvText,
+              })
+            );
+          },
+
+          verifyBalances(payload) {
+            return run(() =>
+              core.responses.verifyResponse({ accounts: accountsData, ...payload })
+            );
+          },
+
+          generate(payload) {
+            return run(() => {
+              const { statement, fileName } = core.responses.prepareStatement({
+                accounts: accountsData,
+                ...payload,
+              });
+              const bytes = core.xlsx.renderStatementXlsx(statement);
+              return {
+                fileName,
+                blob: new Blob([bytes], {
+                  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                }),
+              };
+            });
+          },
+        };
+      })();
+    </script>
+    <script>
+      'use strict';
+
+      /* Front end for the bank statement generator. Drives the four steps and talks
+         to the JavaScript back end over /api. */
+
+      const state = {
+        accounts: [],
+        account: null,
+        transactions: [],
+        csv: null,
+        balances: null,
+        verified: false,
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      const el = {
+        entityFilter: $('entity-filter'),
+        accountSelect: $('account-select'),
+        accountCard: $('account-card'),
+        accountNext: $('account-next'),
+        csvInput: $('csv-input'),
+        csvSummary: $('csv-summary'),
+        csvNext: $('csv-next'),
+        balanceForm: $('balance-form'),
+        opening: $('opening-balance'),
+        closing: $('closing-balance'),
+        balanceResult: $('balance-result'),
+        generateSummary: $('generate-summary'),
+        generateButton: $('generate-button'),
+        generateResult: $('generate-result'),
+        stepIndicator: $('step-indicator'),
+      };
+
+      /* ---------------------------------------------------------------- helpers */
+
+      function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(
+          /[&<>"']/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
+        );
+      }
+
+      function money(value, currency) {
+        const num = Number(value || 0);
+        const text = num.toLocaleString('en-IE', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        });
+        return currency ? `${text} ${currency}` : text;
+      }
+
+      function notice(kind, title, body) {
+        return `<div class="notice ${kind}">${title ? `<h3>${escapeHtml(title)}</h3>` : ''}${body}</div>`;
+      }
+
+      function list(items) {
+        if (!items || items.length === 0) return '';
+        return `<ul>${items.map((i) => `<li>${escapeHtml(i)}</li>`).join('')}</ul>`;
+      }
+
+      function showStep(step) {
+        for (let i = 1; i <= 4; i += 1) {
+          $(`panel-${i}`).classList.toggle('hidden', i !== step);
+        }
+        el.stepIndicator.querySelectorAll('li').forEach((li) => {
+          const n = Number(li.dataset.step);
+          li.classList.toggle('current', n === step);
+          li.classList.toggle('done', n < step);
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      /* --------------------------------------------------------- step 1: account */
+
+      async function loadAccounts() {
+        try {
+          state.accounts = (await API.accounts()) || [];
+        } catch (err) {
+          el.accountCard.classList.remove('hidden');
+          el.accountCard.innerHTML = notice(
+            'bad',
+            'Could not load the account list',
+            `<p>${escapeHtml(err.message)}</p>`
+          );
+          return;
+        }
+
+        const entities = [...new Set(state.accounts.map((a) => a.entity).filter(Boolean))].sort();
+        el.entityFilter.insertAdjacentHTML(
+          'beforeend',
+          entities.map((e) => `<option value="${escapeHtml(e)}">${escapeHtml(e)}</option>`).join('')
+        );
+        renderAccountOptions();
+      }
+
+      function renderAccountOptions() {
+        const filter = el.entityFilter.value;
+        const accounts = filter ? state.accounts.filter((a) => a.entity === filter) : state.accounts;
+        el.accountSelect.innerHTML = accounts
+          .map((a) => `<option value="${escapeHtml(a.id)}">${escapeHtml(a.label)}</option>`)
+          .join('');
+        el.accountSelect.value = state.account && accounts.includes(state.account) ? state.account.id : '';
+        onAccountChange();
+      }
+
+      function onAccountChange() {
+        const id = el.accountSelect.value;
+        state.account = state.accounts.find((a) => a.id === id) || null;
+        el.accountNext.disabled = !state.account;
+
+        if (!state.account) {
+          el.accountCard.classList.add('hidden');
+          return;
+        }
+
+        const a = state.account;
+        el.accountCard.classList.remove('hidden');
+        el.accountCard.innerHTML = `
+          <dl class="kv">
+            <dt>Entity</dt><dd>${escapeHtml(a.entity || '—')}</dd>
+            <dt>BANKACCOUNT</dt><dd>${escapeHtml(a.bankAccount)}</dd>
+            <dt>Name</dt><dd>${escapeHtml(a.name || '—')}</dd>
+            <dt>Currency</dt><dd>${escapeHtml(a.currency || '—')}</dd>
+            <dt>IBAN</dt><dd class="num">${escapeHtml(a.iban || '—')}</dd>
+            <dt>Account number</dt><dd class="num">${escapeHtml(a.accountNumber || '—')}</dd>
+            <dt>Main account</dt><dd class="num">${escapeHtml(a.mainAccount || '—')}</dd>
+            <dt>Statement ID</dt><dd class="num">${escapeHtml(a.statementIdPrefix)}-DDMMYYYY</dd>
+          </dl>`;
+
+        // Changing account invalidates anything captured later.
+        resetFromStep2();
+      }
+
+      function resetFromStep2() {
+        state.transactions = [];
+        state.csv = null;
+        resetVerification();
+        el.csvSummary.innerHTML = '';
+        el.csvNext.disabled = true;
+      }
+
+      function resetVerification() {
+        state.verified = false;
+        state.balances = null;
+        el.balanceResult.innerHTML = '';
+        el.generateResult.innerHTML = '';
+      }
+
+      /* ----------------------------------------------------------- step 2: CSV */
+
+      async function uploadCsv(file) {
+        el.csvSummary.innerHTML = notice('info', '', '<p>Reading the CSV file…</p>');
+        el.csvNext.disabled = true;
+
+        let data;
+        try {
+          data = await API.parseCsv(state.account.id, file);
+        } catch (err) {
+          el.csvSummary.innerHTML = notice(
+            'bad',
+            err.message || 'The CSV file could not be read.',
+            list(err.details || [])
+          );
+          return;
+        }
+
+        state.csv = data;
+        state.transactions = data.transactions;
+        resetVerification();
+        el.csvNext.disabled = false;
+        renderCsvSummary(data);
+      }
+
+      function renderCsvSummary(data) {
+        const ccy = state.account.currency;
+        const blocks = [];
+
+        blocks.push(`
+          <div class="summary-grid">
+            <dl class="kv">
+              <dt>File</dt><dd>${escapeHtml(data.fileName)}</dd>
+              <dt>Transactions</dt><dd class="num">${data.transactionCount}</dd>
+              <dt>Credits</dt><dd class="num">${data.creditCount} · ${escapeHtml(money(data.creditTotal, ccy))}</dd>
+              <dt>Debits</dt><dd class="num">${data.debitCount} · ${escapeHtml(money(data.debitTotal, ccy))}</dd>
+              <dt>Net movement</dt><dd class="num">${escapeHtml(money(data.transactionTotal, ccy))}</dd>
+              <dt>Date range</dt><dd class="num">${escapeHtml(data.fromDate)} to ${escapeHtml(data.toDate)}</dd>
+            </dl>
+          </div>`);
+
+        if (data.rowErrors && data.rowErrors.length > 0) {
+          blocks.push(
+            notice('bad', 'Some rows could not be read and were skipped', list(data.rowErrors))
+          );
+        }
+        if (data.warnings && data.warnings.length > 0) {
+          blocks.push(notice('warn', 'Check these before you continue', list(data.warnings)));
+        }
+
+        blocks.push(`
+          <div class="table-scroll">
+            <table class="txns">
+              <thead>
+                <tr>
+                  <th>#</th><th>Date</th><th class="right">Amount</th><th>Dr/Cr</th>
+                  <th>Status</th><th>Reference</th><th>Counterparty</th><th>Narrative</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.transactions
+                  .map(
+                    (t, i) => `
+                  <tr>
+                    <td class="num">${i + 1}</td>
+                    <td class="num">${escapeHtml(t.date)}</td>
+                    <td class="num right ${t.amount < 0 ? 'debit' : ''}">${escapeHtml(money(t.amount))}</td>
+                    <td>${escapeHtml(t.creditDebit)}</td>
+                    <td>${escapeHtml(t.lineStatus)}</td>
+                    <td class="num">${escapeHtml(t.reference || '')}</td>
+                    <td>${escapeHtml(t.creditDebit === 'Debit' ? t.creditorName : t.debtorName)}</td>
+                    <td>${escapeHtml(t.narrative || '')}</td>
+                  </tr>`
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          </div>`);
+
+        el.csvSummary.innerHTML = blocks.join('');
+      }
+
+      /* ------------------------------------------------------ step 3: balances */
+
+      async function verifyBalances(event) {
+        event.preventDefault();
+        el.opening.classList.remove('invalid');
+        el.closing.classList.remove('invalid');
+
+        if (el.opening.value.trim() === '' || el.closing.value.trim() === '') {
+          if (el.opening.value.trim() === '') el.opening.classList.add('invalid');
+          if (el.closing.value.trim() === '') el.closing.classList.add('invalid');
+          el.balanceResult.innerHTML = notice(
+            'bad',
+            'Both balances are required',
+            '<p>Enter the opening balance and the closing balance from the bank statement.</p>'
+          );
+          return;
+        }
+
+        let data;
+        try {
+          data = await API.verifyBalances({
+            accountId: state.account.id,
+            openingBalance: el.opening.value,
+            closingBalance: el.closing.value,
+            transactions: state.transactions,
+          });
+        } catch (err) {
+          el.balanceResult.innerHTML = notice(
+            'bad',
+            'Balances could not be verified',
+            `<p>${escapeHtml(err.message)}</p>`
+          );
+          return;
+        }
+
+        const ccy = data.currency;
+        const workings = `
+          <dl class="kv">
+            <dt>Opening balance</dt><dd class="num">${escapeHtml(money(data.openingBalance, ccy))}</dd>
+            <dt>Transactions (${data.transactionCount})</dt><dd class="num">${escapeHtml(money(data.transactionTotal, ccy))}</dd>
+            <dt>Expected closing</dt><dd class="num">${escapeHtml(money(data.expectedClosingBalance, ccy))}</dd>
+            <dt>Closing balance entered</dt><dd class="num">${escapeHtml(money(data.closingBalance, ccy))}</dd>
+            <dt>Difference</dt><dd class="num">${escapeHtml(money(data.difference, ccy))}</dd>
+          </dl>`;
+
+        if (!data.valid) {
+          state.verified = false;
+          state.balances = null;
+          el.opening.classList.add('invalid');
+          el.closing.classList.add('invalid');
+          el.balanceResult.innerHTML = notice(
+            'bad',
+            'The balances do not reconcile',
+            `<p>${escapeHtml(data.message)}</p>${workings}`
+          );
+          return;
+        }
+
+        state.verified = true;
+        state.balances = {
+          openingBalance: data.openingBalance,
+          closingBalance: data.closingBalance,
+          statementId: data.statementId,
+          currency: ccy,
+          validation: data,
+        };
+        el.balanceResult.innerHTML =
+          notice('ok', 'Balances verified', `<p>${escapeHtml(data.message)}</p>${workings}`) +
+          '<div class="actions"><button type="button" class="primary" id="to-generate">' +
+          'Continue to generate the file</button></div>';
+        $('to-generate').addEventListener('click', () => {
+          renderGenerateSummary();
+          showStep(4);
+        });
+      }
+
+      /* ------------------------------------------------------ step 4: generate */
+
+      function renderGenerateSummary() {
+        const a = state.account;
+        const b = state.balances;
+        el.generateSummary.innerHTML = `
+          <div class="summary-grid">
+            <dl class="kv">
+              <dt>Statement ID / file name</dt>
+              <dd><span class="statement-id">${escapeHtml(b.statementId)}</span>.xlsx</dd>
+              <dt>Account</dt><dd>${escapeHtml(a.entity)} · ${escapeHtml(a.bankAccount)} — ${escapeHtml(a.name)}</dd>
+              <dt>Currency</dt><dd>${escapeHtml(b.currency)}</dd>
+              <dt>Period</dt><dd class="num">${escapeHtml(state.csv.fromDate)} to ${escapeHtml(state.csv.toDate)}</dd>
+              <dt>Opening balance</dt><dd class="num">${escapeHtml(money(b.openingBalance, b.currency))}</dd>
+              <dt>Closing balance</dt><dd class="num">${escapeHtml(money(b.closingBalance, b.currency))}</dd>
+              <dt>Statement lines</dt><dd class="num">${state.transactions.length}</dd>
+            </dl>
+          </div>
+          ${notice(
+            'info',
+            '',
+            '<p>The file is built from the Kepak bank statement template, with the ' +
+              '<code>Bank_statement_header</code> and <code>Bank_statement_lines</code> sheets populated ' +
+              'ready for upload to D365.</p>'
+          )}`;
+      }
+
+      async function generateFile() {
+        if (!state.verified) {
+          el.generateResult.innerHTML = notice(
+            'bad',
+            'Balances are not verified',
+            '<p>Go back and verify the opening and closing balances first.</p>'
+          );
+          return;
+        }
+
+        el.generateButton.disabled = true;
+        el.generateResult.innerHTML = notice('info', '', '<p>Generating the Excel file…</p>');
+
+        try {
+          const { fileName, blob } = await API.generate({
+            accountId: state.account.id,
+            openingBalance: state.balances.openingBalance,
+            closingBalance: state.balances.closingBalance,
+            transactions: state.transactions,
+          });
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+          el.generateResult.innerHTML = notice(
+            'ok',
+            'File generated',
+            `<p><span class="statement-id">${escapeHtml(fileName)}</span> has been downloaded. ` +
+              'Upload it to D365 as the bank statement import for this account.</p>'
+          );
+        } catch (err) {
+          el.generateResult.innerHTML = notice(
+            'bad',
+            'The file could not be generated',
+            `<p>${escapeHtml(err.message)}</p>`
+          );
+        } finally {
+          el.generateButton.disabled = false;
+        }
+      }
+
+      function restart() {
+        state.account = null;
+        el.entityFilter.value = '';
+        renderAccountOptions();
+        resetFromStep2();
+        el.csvInput.value = '';
+        el.opening.value = '';
+        el.closing.value = '';
+        el.opening.classList.remove('invalid');
+        el.closing.classList.remove('invalid');
+        showStep(1);
+      }
+
+      /* --------------------------------------------------------------- wiring */
+
+      el.entityFilter.addEventListener('change', renderAccountOptions);
+      el.accountSelect.addEventListener('change', onAccountChange);
+      el.accountSelect.addEventListener('dblclick', () => {
+        if (state.account) showStep(2);
+      });
+      el.accountNext.addEventListener('click', () => showStep(2));
+      $('back-to-1').addEventListener('click', () => showStep(1));
+      $('back-to-2').addEventListener('click', () => showStep(2));
+      $('back-to-3').addEventListener('click', () => showStep(3));
+      el.csvNext.addEventListener('click', () => showStep(3));
+      el.csvInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) uploadCsv(file);
+      });
+      el.balanceForm.addEventListener('submit', verifyBalances);
+      [el.opening, el.closing].forEach((input) =>
+        input.addEventListener('input', () => {
+          input.classList.remove('invalid');
+          if (state.verified) resetVerification();
+        })
+      );
+      el.generateButton.addEventListener('click', generateFile);
+      $('restart-button').addEventListener('click', restart);
+
+      loadAccounts();
+    </script>
+  </body>
+</html>
