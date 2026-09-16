@@ -9,14 +9,32 @@ accepts as a bank statement import.
   `Bank_statement_header` and `Bank_statement_lines` sheets populated, named
   after the statement ID.
 
-## Running it
+## Two ways to run it
+
+**No install:** open `bank-statement-tool.html` — the whole app in one file,
+which runs in the browser with no server, no dependencies and no network. Every
+step happens locally: the CSV is never uploaded and the Excel file is written by
+your browser. Good for trying it out or for a couple of users.
+
+**As a server:**
 
 ```bash
 cd bank-statement-app
 npm install
 npm start           # http://localhost:3000   (PORT=8080 npm start to change port)
-npm test            # 41 tests, node:test
+npm test            # 50 tests, node:test
+npm run build:standalone   # regenerate bank-statement-tool.html
 ```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting on Azure, including locking it
+behind Entra ID sign-in.
+
+The two versions share all their logic — parsing, mapping, the balance rules and
+the account list — so they cannot drift. `bank-statement-tool.html` is generated
+from `src/` and `public/` by `npm run build:standalone`; edit those, not the
+generated HTML. A test fails if the committed file is stale, and another asserts
+that the browser's workbook writer and the server's template writer produce
+identical output cell for cell.
 
 ## The flow
 
@@ -129,8 +147,29 @@ display format, so D365 receives numeric values.
 | `data/Kepak_BankStatement_Mapping.xlsx` | the source mapping workbook, kept for reference |
 
 Regenerate `bank-accounts.json` after the account list changes in the mapping
-workbook. A test asserts the template's column names still match what the code
-writes, so it fails loudly if the template is replaced with a different layout.
+workbook, then run `npm run build:standalone` so the single-file version picks
+the change up. A test asserts the template's column names still match what the
+code writes, so it fails loudly if the template is replaced with a different
+layout.
+
+## Layout
+
+| Path | What it is |
+| ---- | ---------- |
+| `src/csv.js` | CSV parsing |
+| `src/transform.js` | the mapping, the statement ID and the balance rules |
+| `src/account-utils.js` | account lookups and labels |
+| `src/responses.js` | the logic behind each step, shared by both versions |
+| `src/workbook.js` | writes into the real template (server, uses exceljs) |
+| `src/xlsx-browser.js` | writes xlsx from scratch (browser, no dependencies) |
+| `server.js` | Express routes, thin wrappers over `src/responses.js` |
+| `public/app.js` | the four-step UI, used by both versions |
+| `public/api-http.js` | data access via the server |
+| `public/api-local.js` | data access in the browser, no server |
+| `tools/build-standalone.js` | assembles `bank-statement-tool.html` |
+
+The single-file version bundles the `src/` modules with a small CommonJS shim,
+so they run unmodified in the browser.
 
 ## Notes and current limits
 
@@ -145,7 +184,13 @@ writes, so it fails loudly if the template is replaced with a different layout.
 - One statement per CSV. A CSV spanning several accounts is imported against the
   selected account, with a warning.
 - Uploads are capped at 10 MB and held in memory only; nothing is written to
-  disk server-side.
+  disk server-side. The single-file version does not upload at all.
+- The single-file version writes the xlsx itself rather than filling a copy of
+  the template, since a browser cannot read `data/` from disk. Entries are
+  stored uncompressed, so the file is a little larger than the server's; a test
+  asserts the cell contents and number formats are identical.
+- No statement history is kept. If you need a record of what was generated and
+  by whom, that needs the server version plus somewhere to write to.
 - `npm audit` reports a moderate advisory in `uuid`, a transitive dependency of
   `exceljs`. It concerns a buffer bounds check that only applies when a `buf`
   argument is passed to `uuid`, which `exceljs` does not do. The only fix

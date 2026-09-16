@@ -104,15 +104,8 @@ function assertColumns(sheetName, actual, expected) {
   }
 }
 
-/** Sanitises a statement ID for use as a file name. */
-function statementFileName(statementId) {
-  const safe = String(statementId).replace(/[^A-Za-z0-9._-]/g, '_');
-  return `${safe}.xlsx`;
-}
-
 module.exports = {
   renderStatementWorkbook,
-  statementFileName,
   readHeaderRow,
   TEMPLATE_FILE,
   HEADER_SHEET,

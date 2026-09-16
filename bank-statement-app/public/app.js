@@ -71,28 +71,11 @@ function showStep(step) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-async function postJson(url, body) {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const err = new Error(data.error || `Request failed (${res.status}).`);
-    err.data = data;
-    throw err;
-  }
-  return data;
-}
-
 /* --------------------------------------------------------- step 1: account */
 
 async function loadAccounts() {
   try {
-    const res = await fetch('/api/accounts');
-    const data = await res.json();
-    state.accounts = data.accounts || [];
+    state.accounts = (await API.accounts()) || [];
   } catch (err) {
     el.accountCard.classList.remove('hidden');
     el.accountCard.innerHTML = notice(
@@ -170,24 +153,15 @@ async function uploadCsv(file) {
   el.csvSummary.innerHTML = notice('info', '', '<p>Reading the CSV file…</p>');
   el.csvNext.disabled = true;
 
-  const form = new FormData();
-  form.append('accountId', state.account.id);
-  form.append('file', file);
-
   let data;
   try {
-    const res = await fetch('/api/transactions', { method: 'POST', body: form });
-    data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      el.csvSummary.innerHTML = notice(
-        'bad',
-        data.error || 'The CSV file could not be read.',
-        list(data.details || [])
-      );
-      return;
-    }
+    data = await API.parseCsv(state.account.id, file);
   } catch (err) {
-    el.csvSummary.innerHTML = notice('bad', 'Upload failed', `<p>${escapeHtml(err.message)}</p>`);
+    el.csvSummary.innerHTML = notice(
+      'bad',
+      err.message || 'The CSV file could not be read.',
+      list(err.details || [])
+    );
     return;
   }
 
@@ -275,7 +249,7 @@ async function verifyBalances(event) {
 
   let data;
   try {
-    data = await postJson('/api/verify-balances', {
+    data = await API.verifyBalances({
       accountId: state.account.id,
       openingBalance: el.opening.value,
       closingBalance: el.closing.value,
@@ -372,29 +346,13 @@ async function generateFile() {
   el.generateResult.innerHTML = notice('info', '', '<p>Generating the Excel file…</p>');
 
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        accountId: state.account.id,
-        openingBalance: state.balances.openingBalance,
-        closingBalance: state.balances.closingBalance,
-        transactions: state.transactions,
-      }),
+    const { fileName, blob } = await API.generate({
+      accountId: state.account.id,
+      openingBalance: state.balances.openingBalance,
+      closingBalance: state.balances.closingBalance,
+      transactions: state.transactions,
     });
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      el.generateResult.innerHTML = notice(
-        'bad',
-        'The file could not be generated',
-        `<p>${escapeHtml(data.error || `Request failed (${res.status}).`)}</p>`
-      );
-      return;
-    }
-
-    const fileName = res.headers.get('X-Statement-File-Name') || `${state.balances.statementId}.xlsx`;
-    const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;

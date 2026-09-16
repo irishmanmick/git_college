@@ -5,7 +5,7 @@
  * CSV transactions, following Kepak_BankStatement_Mapping.xlsx.
  */
 
-const { accountSuffix, bankCode } = require('./accounts');
+const { accountSuffix, bankCode } = require('./account-utils');
 
 /** Tolerance for the balance check: half a cent. */
 const BALANCE_TOLERANCE = 0.005;
